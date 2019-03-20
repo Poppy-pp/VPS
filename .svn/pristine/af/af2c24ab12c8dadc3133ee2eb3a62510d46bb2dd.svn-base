@@ -1,0 +1,146 @@
+<template>
+    <div id="chartPage">
+        <el-carousel trigger="click" height="950px" :autoplay="isautoplay">
+            <el-carousel-item>
+                  <el-row :gutter="15">
+                       <!-- 个人信息 -->
+                        <el-col :span="5">
+                            <basic-info :cls="cls"></basic-info>
+                        </el-col>
+                        <el-col :span="19" style="padding-left: 0">
+                            <!--平均速度-->
+                            <el-col :span="8">
+                              <speed :cls="cls"></speed>
+                            </el-col>
+                            <!--行车时间-->
+                            <el-col :span="8">
+                              <drive-time :cls="cls"></drive-time>
+                            </el-col>
+                            <!--里程公里数-->
+                            <el-col :span="8" style="padding-right: 0">
+                              <day-mileage :cls="cls"></day-mileage>
+                            </el-col>
+                        </el-col>
+                   </el-row>
+                   <el-row :gutter="15" style="margin-top:15px;margin-bottom: 20px">
+                          <!--总数统计-->
+                          <el-col :span="5">
+                              <risk :cls="cls"></risk>
+                          </el-col>
+                          <!--车辆在线状态-->
+                          <el-col :span="10" style="margin-top: -42px;">
+                              <stop-electric :cls="cls"></stop-electric>
+                          </el-col>
+                           <!--车辆报警-->
+                          <el-col :span="9" style="margin-top: -42px;">
+                              <alarm :cls="cls"></alarm>
+                          </el-col>
+                            <!--历史轨迹-->
+                          <el-col :span="10" style="margin-top:15px">
+                              <time-analysis :cls="cls"></time-analysis>
+                          </el-col>
+                           <!--备忘录-->
+                          <el-col :span="9" style="margin-top:15px">
+                              <remarks :cls="cls"></remarks>
+                          </el-col>
+                   </el-row>
+            </el-carousel-item>
+
+
+            <el-carousel-item>
+                  <el-row :gutter="15">
+                       <!-- 个人信息 -->
+                        <el-col :span="5">
+                            <basic-info :cls="cls"></basic-info>
+                        </el-col>
+                        <el-col :span="19" style="padding-left: 0">
+                            <!--停车时长-->
+                            <el-col :span="8">
+                              <parking-time :cls="cls"></parking-time>
+                            </el-col>
+                            <!--行车时间-->
+                            <el-col :span="8">
+                              <!-- <drive-time :cls="cls"></drive-time> -->
+                            </el-col>
+                            <!--里程公里数-->
+                            <el-col :span="8" style="padding-right: 0">
+                              <!-- <day-mileage :cls="cls"></day-mileage> -->
+                            </el-col>
+                        </el-col>
+                   </el-row>
+                   <el-row :gutter="15" style="margin-top:15px;margin-bottom: 20px">
+                          <!--总数统计-->
+                          <el-col :span="5">
+                              <!-- <risk :cls="cls"></risk> -->
+                          </el-col>
+                          <!--车辆在线状态-->
+                          <el-col :span="10" style="margin-top: -42px;">
+                              <!-- <stop-electric :cls="cls"></stop-electric> -->
+                          </el-col>
+                           <!--车辆报警-->
+                          <el-col :span="9" style="margin-top: -42px;">
+                              <!-- <alarm :cls="cls"></alarm> -->
+                          </el-col>
+                            <!--历史轨迹-->
+                          <el-col :span="10" style="margin-top:15px">
+                              <!-- <time-analysis :cls="cls"></time-analysis> -->
+                          </el-col>
+                           <!--备忘录-->
+                          <el-col :span="9" style="margin-top:15px">
+                              <!-- <remarks :cls="cls"></remarks> -->
+                          </el-col>
+                   </el-row>
+            </el-carousel-item>
+
+        </el-carousel>
+   </div>
+</template>
+<script>
+import basicInfo from '@c/Behavier/basicInfo.vue'         //基础信息
+import speed from '@c/Behavier/speed'                     //平均速度
+import driveTime from '@c/Behavier/driveTime'             //行车时长
+import dayMileage from '@c/Behavier/dayMileage'           //今日里程/总里程
+import timeAnalysis from '@c/Behavier/timeAnalysis'       //历史轨迹
+import alarm from '@c/Behavier/alarm'                     //车辆报警
+import risk from '@c/Behavier/risk'                       //风险分析
+import stopElectric from '@c/Behavier/stopElectric'       //长停点
+import remarks from '@c/Behavier/remarks'                 //备忘录
+import parkingTime from '@c/Behavier/parkingTime'                 //停车时长
+
+export default {
+      components: {
+        basicInfo,
+        speed,
+        dayMileage,
+        driveTime,
+        alarm,
+        risk,
+        stopElectric,
+        remarks,
+        timeAnalysis,
+        parkingTime,
+      },
+      props:['cls'],
+  data () {
+    return {
+                  isautoplay:false,
+    }
+  },
+  mounted(){
+  },
+  methods:{
+  },
+  created(){
+    // this.$store.commit("update_c3Dloading",false)
+  }
+}
+</script>
+
+<style scoped>
+  .vps-custom-default #chartPage .timeTab{
+    background: rgba(12, 43, 74, .8);
+    padding: 24px 0;
+    height: 80px;
+    position: relative;
+  }
+</style>

@@ -1,0 +1,195 @@
+<template>
+    <section id="followCar"
+        v-loading="followLoading"
+        element-loading-text="关注列表加载中···"
+        element-loading-spinner="el-icon-loading"
+        element-loading-background="rgba(0, 0, 0, 0.7)">
+       <el-tree
+        :data="followTreeData"
+        ref="treeVehtree"
+        node-key="cid"
+        :props="defaultProps"
+        default-expand-all
+        show-checkbox
+        check-strictly
+        :renderContent = "treeFollowRenderContent"
+        @check-change  = "handleCheck"
+        @node-expand   = "handleNodeClick"
+        @node-click    = "nodeClick"
+        @node-collapse = "collapseNode">
+      </el-tree>
+    </section>
+</template>
+
+<script>
+import Vue from "vue";
+import { queryfollowdata, getFollow } from "@/Api/mapApi.js";
+export default {
+  name: "followCar",
+  computed: {
+    setCurVehInfo() {
+      let setCurVehInfo = this.$store.getters.setCurVehInfo;
+      return setCurVehInfo;
+    }
+  },
+  watch: {
+    //监听的车辆
+    setCurVehInfo(curveh) {
+      this.curOneVeh(curveh);
+    }
+  },
+  data() {
+    return {
+      followTreeData: [],
+      followVehList: [], //所有关注车列表
+      followLoading: false,
+      defaultProps: {
+        children: "children",
+        label: "label"
+      }
+    };
+  },
+  methods: {
+    //选中对应车辆 或者取消
+    curOneVeh(oldveh) {
+      this.$nextTick(function() {
+        let ckeys = this.$tree.getCheckedNodes();
+        let cfollowkeys = this.followVehList;
+        cfollowkeys.forEach((item, index) => {
+          let vid = item.vehicleid;
+          let fitem = this.$tree.getNode("v" + vid);
+          if (fitem) {
+            this.$refs.treeVehtree.setChecked("v" + vid, fitem.checked);
+            if (!fitem.checked) {
+              this.$refs.treeVehtree.remove("d0" + vid);
+              this.$refs.treeVehtree.remove("d1" + vid);
+              this.$refs.treeVehtree.remove("d2" + vid);
+              /* 测试 删除设备节点 */
+            }
+          }
+        });
+      });
+    },
+    //默认初始化关注车辆选中状态·
+    defaultCurVeh(curveh) {
+      this.$nextTick(function() {
+        curveh.forEach((item, index) => {
+          this.$refs.treeVehtree.setChecked("v" + item.vehicleid, true);
+        });
+      });
+    },
+    //初始化关注树数据
+    initFollowTreeData() {
+      let _self = this;
+      let carInfo = _self.$store.getters.moveCarInfo; //获取状态树 原地设防数据
+      let para = {
+        userid: _self.$store.getters.user.userid,
+        condition: "",
+        id: -1
+      };
+      this.followLoading = true;
+      //查询所有的 关注分组
+      getFollow({ id: para.userid }).then(res => {
+        if (res.data.result.code == 0) {
+          _self.followTreeData = res.data.data.map(function(item, index) {
+            item.label = item.name;
+            item.cid = "f" + item.id;
+            item.children = null;
+            item.disabled = true;
+            return item;
+          });
+          //查询所有的 关注车辆
+          queryfollowdata(para).then(res => {
+            this.followLoading = false;
+            if (res.data.result.code == 0) {
+              this.followVehList = res.data.data.map(function(item, index) {
+                item.label = "";
+                item.label += item.name || "";
+                if (item.name && item.owner) item.label += "/";
+                item.label += item.owner || "";
+                item.children = null;
+                item.vehicleid = item.id;
+                item.cid = "v" + item.id;
+                _self.$refs.treeVehtree.append(item, "f" + item.pid);
+                return item;
+              });
+              this.defaultCurVeh(this.setCurVehInfo);
+            }
+          });
+        }
+      });
+    },
+    //勾选的时候操作
+    handleCheck(data, ischeck, cischeck) {
+    //   data.checkType = 1;
+    //   let tnode = this.$tree.getNode("v" + data.vehicleid);
+
+    //   if (tnode) {
+    //     this.$tree.setChecked("v" + data.vehicleid, ischeck);
+    //   } else {
+    //     this.$emit("handleCheck", {
+    //       data: data,
+    //       ischeck: ischeck,
+    //       cischeck: cischeck
+    //     });
+    //   }
+    //   if (!ischeck) {
+    //     this.$store.state.defaultCheckedKeysList.forEach((item, index) => {
+    //       if (item == data.vehicleid) {
+    //         this.$store.state.defaultCheckedKeysList.splice(index, 1);
+    //       }
+    //     });
+    //     this.$refs.treeVehtree.remove("d0" + data.vehicleid);
+    //     this.$refs.treeVehtree.remove("d1" + data.vehicleid);
+    //     this.$refs.treeVehtree.remove("d2" + data.vehicleid);
+    //   } else {
+    //     this.$store.state.defaultCheckedKeysList.push(data.vehicleid);
+    //   }
+    data.checkType = 0;
+    var _this=this;
+        let monitorData = this.$store.getters.monitorData;
+        for (var i = 0, len = monitorData.length; i < len; i++) {
+            monitorData[i].devices.forEach((item,index)=>{
+                  _this.$refs.treeVehtree.remove('d'+item.prodnum+data.vehicleid); 
+              })
+        }
+        this.$emit('handleCheck',{data:data,ischeck:ischeck,cischeck:cischeck});
+    },
+    handleNodeClick() {},
+    nodeClick(data, node, target) {
+      //如果当前节点别选择 并且是一个车
+      if (node.checked && data.vehicleid) {
+        this.$store.dispatch("zoomToCarByCarId", {
+          carId: data.vehicleid,
+          _this: this
+        });
+      }
+    },
+    collapseNode() {},
+    //渲染树内容
+    treeFollowRenderContent(h, { node, data, store }) {
+      //如果type为1 设备信息
+      if (data.type == 1) {
+        return (
+          <span class="custom-veh-tree-node">
+            <span class="tdevice"> {data.label} </span>
+          </span>
+        );
+      } else {
+        return (
+          <span class="custom-veh-tree-node">
+            <span>{data.label} </span>
+          </span>
+        );
+      }
+    }
+  },
+  created() {
+    //申明树实例
+    this.$nextTick(function() {
+      Vue.prototype.$followTree = this.$refs.treeVehtree;
+    });
+    this.initFollowTreeData();
+  }
+};
+</script>

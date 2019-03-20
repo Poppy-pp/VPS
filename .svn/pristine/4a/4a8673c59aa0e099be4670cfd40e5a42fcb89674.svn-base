@@ -1,0 +1,165 @@
+import {getvehicletotaldistance,vehicleremarks,vehicledetail,searchVEbyvehicleid,followinfobyid,getydsfbyvehicleid } from '@/Api/mapApi.js'
+export default {
+  //在高德地图定位车辆位置 根据点击车的id获取对应maker
+  zoomToCarByCarId({ commit, state, getters },{carId,_this}) {
+    var map = _this.$map;
+    var markers = state.carMarkerList;
+    var marker = null;
+    for (var i = 0,len = markers.length; i < len; i++) {
+        if (markers[i].getExtData().vehicleid == carId) {
+            marker = markers[i];
+            break;
+        }
+    }
+    if (marker == null) {
+        //获取最后一条位置信息
+        _this.$message({
+          message: '该车辆无位置信息！',
+          type: 'error'
+        });
+    }
+    else {
+        // map.setZoomAndCenter(4, marker.getPosition())
+        // map.setZoomAndCenter(16, marker.getPosition())
+        map.panTo(marker.getPosition())
+        map.panBy(0,-$("div#mapContainer").height()/3*0.8)
+        console.log("ddd",$("div#mapContainer").height()/3*0.8)
+    }
+  },
+  //在高德地图定位车辆位置 根据点击车的id获取对应位置
+  zoomBJToCarByCarId({ commit, state, getters },{carId,_this,type}) {
+    var map = _this.$map;
+    var data = (type == 1 ? state.policeData : state.abnormalData);
+    var info = null;
+    for (var i = 0,len = data.length; i < len; i++) {
+        if (data[i].vehicleid == carId) {
+            info = data[i];
+            break;
+        }
+    }
+    if (info == null) {
+        //获取最后一条位置信息
+        _this.$message({
+          message: '该车辆无位置信息！',
+          type: 'error'
+        });
+    }
+    else {
+        map.setZoomAndCenter(4, info.point)
+        map.setZoomAndCenter(16, info.point)
+    }
+  },
+  //删除指点marker和对应的label
+  delete_carMaker({ commit, state, getters },{carId,_this,index}) {
+    var map = _this.$map;
+    var markers = state.carMarkerList;
+    var marker_labels = state.carlabelList;
+    var marker = null;
+    var marker_label = null;
+    for (var i = 0,len = markers.length; i < len; i++) {
+        if (markers[i].getExtData().vehicleid == carId) {
+            marker = markers[i];
+            marker_label = marker_labels[i];
+            break;
+        }
+    }
+    if (marker != null){
+      marker.setMap(null);
+      marker_label.setMap(null);
+      commit('delete_carMarker',index);
+    }
+  },
+  //初始化监控列表数据
+  renderMonitor({ commit, state, getters },{data,ischeck,cischeck,_this}){
+    let para1 = {
+      index:0,
+      pagesize:100000,
+      id:data.vehicleid
+    },
+    para2 = {
+      id:data.vehicleid
+    },
+    para3 = {
+      condition:data.vehicleid,
+      userid:state.user.userid
+    },
+    para = {
+      id:data.vehicleid,
+      userid:state.user.userid
+    };
+
+    //获取本地数据库车辆详情
+    _this.$indexedDB.getDataById('vehicleDetail',data.vehicleid,function(result){
+      var res = result.data;
+      if(res != undefined){
+        _this.$store.commit("add_monitorData",{basicdata:res.basicdata,data:data});
+      }else{
+        _this.$store.commit("add_monitorData",{basicdata:{},data:data});
+      }
+    });
+    //获取车辆详情
+    vehicledetail(para2).then((res) => {
+      if(res.data.result.code == 0) {
+        let vdata = res.data.data;
+        if(!vdata) return;
+        //车辆基础数据更新
+        _this.$Veh.updateVehicledetail(vdata);
+        //根据基础数据 地图添加车辆点
+        _this.createMarkerCar(vdata);
+        //将车辆基础数据存入数据库 start**/
+        vdata.vehicleid = data.vehicleid;
+        vdata.carno = data.label;
+        //添加车辆设备 信息
+        vdata.proddata.forEach(function(item,index){
+          item.label = item.prodspec+'/'+item.prodmodel+'/'+item.prodnum;
+          item.leaf = true;
+          item.disabled = true;
+          item.type = 1;
+          item.cid = 'd'+item.prodnum+''+data.vehicleid;
+          console.log(item.cid)
+          if(_this.$searchVehtree.getNode(data.cid) && !_this.$searchVehtree.getNode(item.cid)) _this.$searchVehtree.insertAfter(item,data.cid);
+          if(_this.$tree.getNode(data.cid) && !_this.$tree.getNode(item.cid)) _this.$tree.insertAfter(item,data.cid);
+          if(_this.$followTree && _this.$followTree.getNode(data.cid) && !_this.$followTree.getNode(item.cid)) _this.$followTree.insertAfter(item,data.cid);
+        });
+        _this.$indexedDB.putData('vehicleDetail',vdata,function(res){});
+        //将车辆基础数据存入数据库 end**/
+        if(vdata){
+          let para = {
+            id:data.vehicleid + ',' + vdata.proddata.prodnum
+          }
+          getvehicletotaldistance(para).then((res) => {
+            if(res.data.result.code == 0){
+              // console.log(res)
+            }
+          });
+        }
+      }
+    });
+    //根据车辆id获取所有关注
+    followinfobyid(para).then((res) => {
+      if(res.data.result.code == 0) {
+        let fllowList = res.data.data || [];
+        _this.$store.commit("update_follow",{fllowList:fllowList,vehicleid:data.vehicleid});
+      }
+    });
+    //根据车辆id查询对应的电子围栏
+    searchVEbyvehicleid(para3).then((res) => {
+      if(res.data.result.code == 0) {
+        let VE = res.data.data || [];
+        _this.$store.commit("update_VE",{VE:VE,vehicleid:data.vehicleid});
+      }
+    });
+    //跟据车辆id查找对应原地设防信息
+    getydsfbyvehicleid(para).then((res) => {
+      if(res.data.result.code == 0) {
+         // console.log(res.data.data)
+      }
+    });
+    //根据车辆id获取备注信息
+    vehicleremarks(para1).then((res) => {
+      if(res.data.result.code == 0) {
+         // console.log(res.data.data)
+      }
+    });
+  }
+}

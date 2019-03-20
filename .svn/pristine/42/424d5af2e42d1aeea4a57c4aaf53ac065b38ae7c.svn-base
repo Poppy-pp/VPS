@@ -1,0 +1,389 @@
+/*高德地图宽高  默认全屏平铺*/
+div#mapContainer,
+div#mapContainerHistory,
+div.vpsLayer{
+  width:100vw;
+  height:100vh;
+  background-color:rgb(18, 61, 101);
+}
+div.hismap{
+  width:100%;
+  height:100%;
+}
+.amap-maps,
+.amap-drags,
+.amap-layers{
+  background-color: rgb(18, 61, 101);
+}
+/*公用样式*/
+.mr5{
+  margin-right:5px;
+}
+
+.mr10{
+  margin-right:10px;
+}
+
+.mt15{
+  margin-top:15px;
+}
+
+.pdl40{
+  padding-left: 40px;
+}
+.fs16{
+  font-size: 16px;
+}
+.fs20{
+  font-size: 20px;
+}
+.mt10{
+  margin-top:10px;
+}
+.ml10{
+  margin-left: 10px;
+}
+.ml15{
+  margin-left: 15px;
+}
+
+.behavierBox{
+  position: relative;
+  border: 1px solid rgba(0,0,0,0);
+  z-index: 9;
+  }
+.behavierBG{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #0d2b4a;
+  opacity: 0.97;
+  border-radius: 2px;
+  color: #FFF;
+}
+.timeAnalysisBG{
+  background: rgba(12, 43, 74, .8);
+  position: fixed;
+  /*width: 100%;*/
+  bottom: 0;
+  z-index: 9;
+  margin: 0 0 29px 40px;
+  border-radius: 10px;
+}
+.behavierContent{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20px;
+  background: #0d2b4a;
+  border-radius: 2px;
+  color: #FFF;
+}
+.leftT{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #436da6;
+  border-radius: 2px;
+  top: -2px;
+  left: -2px;
+  z-index: -1;
+}
+.leftB{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #436da6;
+  border-radius: 2px;
+  bottom: -2px;
+  left: -2px;
+  z-index: -1;
+}
+.rightT{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #436da6;
+  border-radius: 2px;
+  right: -2px;
+  top: -2px;
+  z-index: -1;
+}
+.rightB{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #436da6;
+  border-radius: 2px;
+  bottom: -2px;
+  right: -2px;
+  z-index: -1;
+}
+.icon-iconfontguanbi{
+  cursor: pointer;
+}
+.icon-iconfontguanbi:hover{
+  color:red;
+  font-size: 20px;
+}
+.vps-custom-default .el-dialog__headerbtn .el-dialog__close:hover{
+  color:red;
+}
+.h100{
+  height:100%;
+  overflow-y: scroll;
+}
+/***自定义弹窗样式 高德地图 start***/
+div.markerInfo div.info-top span{
+  position: relative;
+  width: 20px;
+  height:20px;
+  border-radius: 20px;
+  text-align: center;
+  padding: 5px;
+  cursor: pointer;
+}
+
+div.markerInfo .dashed{
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 80px;
+  border:2px #067816 dashed;
+  z-index: -1;
+}
+div.markerInfo div.info-top span.ydsf {
+  top: 13px;
+  left: 33px;
+}
+div.markerInfo div.info-top span.lsgj {
+  left: -37px;
+  top: 46px;
+}
+div.markerInfo div.info-top span.genzong {
+  top: 90px;
+  left: -46px;
+}
+div.markerInfo div.info-top span.zhiling {
+  top: 90px;
+  left: -21px;
+}
+div.markerInfo div.info-top span.dzwk {
+  top: 45px;
+  left: -29px;
+}
+.amap-overlays{
+  z-index: 0;
+}
+.amap-info .info-top{
+  animation: bounce-in .2s;
+}
+.amap-info .dashed{
+  animation: rotate-infinite 6s infinite;
+}
+
+/***自定义弹窗样式 高德地图 end***/
+
+
+/*覆盖左侧树的样式 start*/
+#treeSty .custom-veh-tree-node i.iconfont{
+  display: inline-block;
+  width:17px;
+}
+
+#treeSty .el-tree-node__content>.el-tree-node__expand-icon{
+  padding: 0;
+}
+#treeSty span.custom-tree-node,#treeSty span.custom-veh-tree-node{
+  font-size: 16px;
+}
+/*覆盖左侧树的样式 end*/
+
+/** 覆盖element-ui样式 start**/
+#VPS .el-table .cell{
+  word-break: keep-all;
+  white-space: nowrap;
+}
+#VPS .el-table{
+  font-size: 15px;
+}
+#amapBox .el-dialog__body{
+  padding: 0;
+}
+/** 覆盖element-ui样式 end**/
+
+
+/** 定义css动画 start**/
+
+/*定义动画 上下旋转*/
+.rotatejiantouOriginal{
+  -webkit-transition: all 0.2s;
+  transition: all 0.2s;
+  transform: rotate(0deg);
+}
+.rotatejiantou{
+  -webkit-transition: all 0.2s;
+  transform: rotate(180deg);
+}
+/*车辆信息收缩展开动画*/
+.carsInfosHeight{
+  transition: height 0.2s;
+}
+/*定义动画 左右展开*/
+.transitionWidth{
+  -webkit-transition: width 0.2s linear;
+  transition: width 0.2s linear;
+}
+.transitionAll{
+  -webkit-transition: all 0.1s linear;
+  transition: all 0.1s linear;
+}
+/**右上角工具栏 展开 收起**/
+@keyframes letMove{
+  from {width: 52px;}
+  to {height:462px;}
+}
+@keyframes rightMove{
+  from {height:462px;}
+  to {height:52px;}
+}
+
+.transitionHeight02{
+  -webkit-transition: height 0.2s;
+  -moz-transition: height 0.2s;
+  -o-transition: height 0.2s;
+  transition: height 0.2s;
+}
+
+
+
+.hisbounce-enter-active {
+  animation: bounce-in12 .5s;
+}
+.bounce-enter-active {
+  animation: bounce-in .5s;
+}
+.bounce-leave-active {
+  animation: bounce-in .5s reverse;
+}
+/** 动画 放大缩小 **/
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+/** 动画 放大缩小 **/
+@keyframes bounce-in12 {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+/** 循环动画旋转180 **/
+@keyframes rotate-infinite {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+/** 循环动画  用户通讯中 闪烁 **/
+@keyframes rotate-shadowColor {
+  0% {
+    box-shadow: 0px 0px 2px 1px rgba(82, 189, 39, 0.4);
+  }
+  50% {
+    box-shadow: 0px 0px 4px 2px rgba(82, 189, 39, 0.8);
+  }
+  100% {
+    box-shadow: 0px 0px 2px 1px rgba(82, 189, 39, 0.4);
+  }
+}
+/** 上下运动 **/
+@keyframes updown-infinite {
+  from {
+    top: -4px;
+  }
+  to {
+    top: 3px;
+  }
+}
+
+
+/** 旋转160deg **/
+@keyframes rotate-infinite160 {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(160deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+/* 绝对定位过渡向右移动*/
+.transitionParent{
+  right: 35px;
+  transition: right 1s;
+}
+.transitionRight{
+  right: 0;
+  transition: right 1s;
+}
+/* 四边小角*/
+.left-top{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #456DA8;
+  border-left: 2px solid #456DA8;
+  top: 0;
+  left: 0;
+}
+.right-top{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #456DA8;
+  border-right: 2px solid #456DA8;
+  right: 0;
+  top: 0;
+}
+.let-bottom{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-left: 2px solid #456DA8;
+  border-bottom: 2px solid #456DA8;
+  bottom:0;
+  left: 0;
+}
+.right-bottom{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #456DA8;
+  border-bottom: 2px solid #456DA8;
+  bottom:0;
+  right: 0;
+}

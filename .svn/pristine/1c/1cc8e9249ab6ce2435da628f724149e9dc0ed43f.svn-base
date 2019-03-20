@@ -1,0 +1,2090 @@
+/*表格滚动条颜色*/
+.vps-custom-default ::-webkit-scrollbar-corner,
+.vps-custom-default ::-webkit-scrollbar-track {
+  background-color: rgb(10, 37, 66) ;
+}
+.vps-custom-default .comFontSize{
+    color: #fff !important;
+}
+.vps-custom-default .comBkg{
+    background: rgb(12,43,74) !important;
+}
+/*搜索框里面的颜色*/
+.vps-custom-default #searchStyle .seachDiv {
+  position: absolute;
+  height: 55px;
+  width: 350px;
+  left: 35px;
+  top:35px;
+  border-radius: 5px;
+  background: rgba(12, 43, 74, .8) ;
+}
+.vps-custom-default .el-input__inner {
+    color: #fff;
+    border-left: 1px solid #fff;
+}
+.vps-custom-default .el-input__inner::-webkit-input-placeholder {
+    color: #fff;
+}
+.vps-custom-default .el-autocomplete-suggestion li {
+    /*color: #fff;*/
+}
+.vps-custom-default .el-input-dropdown__empty {
+    color: #fff;
+}
+.vps-custom-default #searchStyle .el-input__inner {
+  background: rgba(12, 43, 74, 0);
+  border: 0;
+  border-radius: 0;
+  font-size: 15px;
+  color: #fff;
+  border-left: 1px solid #fff;
+  padding-right: 20px !important;
+}
+/*end*/
+/*左侧树形菜单颜色*/
+.vps-custom-default .navs{
+    color: #fff;
+}
+.vps-custom-default .el-tree-node__content {
+    color: #fff;
+}
+/*end*/
+
+/*树 车辆在线数颜色*/
+.vps-custom-default .color067816 {
+    color:#067816;
+}
+
+.vps-custom-default .color848484 {
+    color:#848484;
+}
+
+/*地图小车label样式*/
+.vps-custom-default .vmarker-label{
+    background-color: #00000060;
+    color: #fff;
+    font-size: 12px;
+    padding: 5px;
+    text-align: center;
+    border-radius: 5px;
+    word-break: keep-all;
+    white-space: nowrap;
+}
+/*覆盖地图弹窗样式start*/
+.vps-custom-default div.markerInfo {
+  position: relative;
+  left:3px;
+}
+.vps-custom-default div.markerInfo div.info-top span{
+  background-color:#067816;
+  color: #fff;
+}
+.vps-custom-default div.markerInfo div.info-top span.cur{
+  background-color:#fff;
+  color: #067816;
+}
+/*覆盖表格样式start*/
+.vps-custom-default .el-table,.vps-custom-default .el-table thead{
+  color:#fff;
+}
+.vps-custom-default .el-table td, .vps-custom-default .el-table th.is-leaf{
+  border-bottom: 0;
+}
+.vps-custom-default .el-table__fixed-right::before, .vps-custom-default .el-table__fixed::before,.vps-custom-default .el-table::before{
+  height: 0;
+}
+.vps-custom-default .el-table,
+.vps-custom-default .el-table tr,
+.vps-custom-default .el-table th,
+.vps-custom-default .el-table__body-wrapper.is-scrolling-left~.el-table__fixed{
+  background: transparent;
+}
+.vps-custom-default .el-table__fixed,
+.vps-custom-default .el-table__fixed-right{
+  background: rgba(10, 37, 66,0.98);
+}
+.vps-custom-default .el-table__body tr.hover-row.current-row>td,
+.vps-custom-default .el-table__body tr.hover-row.el-table__row--striped.current-row>td,
+.vps-custom-default .el-table__body tr.hover-row.el-table__row--striped>td,
+.vps-custom-default .el-table__body tr.hover-row>td {
+  background:rgba(10, 37, 66,0.9);
+}
+/**覆盖表格样式end*/
+
+
+
+/** 搜索框样式 start **/
+.vps-custom-default .el-autocomplete-suggestion__wrap{
+  background-color: #0a233f;
+  border: 1px solid #0a233f;
+}
+.vps-custom-default .el-autocomplete-suggestion li{
+  color: #fff;
+}
+.vps-custom-default .el-autocomplete-suggestion li:hover {
+  color: #000;
+}
+
+/**右上角工具栏样式 start*****************/
+.vps-custom-default #signTool .el-input__inner {
+  width: 95px;
+  border: 0;
+  background: rgba(12, 43, 74, .0)
+}
+.vps-custom-default #signTool .toolbar {
+  position: absolute;
+  top: 35px;
+  right: 110px;
+  padding: 0;
+  background: rgba(12, 43, 74, .8);
+  height: 55px;
+  width: 52px;
+  overflow: hidden;
+}
+.vps-custom-default #signTool .widening{
+  width: 446px;
+}
+.vps-custom-default #signTool .opendAndshrink {
+  cursor: pointer;
+  color: #fff;
+  display: inline-block;
+  float: left;
+  font-size: 20px;
+  padding-left: 0;
+  width: 50px;
+  text-align: center;
+  line-height: 50px;
+  border: 3px solid transparent;
+}
+.vps-custom-default #signTool .slideBar{
+  display: inline-block;
+  margin: 18px 0 0 0;
+}
+.vps-custom-default #signTool .screenData {
+  color: #fff;
+}
+
+.vps-custom-default #signTool .styCom {
+  display: inline-block;
+  border-left: 1px solid #fff;
+  font-size: 15px;
+  color: #fff;
+  height: 22px;
+  padding: 0 12px;
+  cursor: pointer;
+  float: left;
+  -webkit-transition: color 0.1s linear;
+  transition: color 0.1s linear;
+}
+.vps-custom-default #signTool .slideBar span.on{
+  color: #52bd27;
+}
+.vps-custom-default #signTool .styCom span.adbut {
+  width: 45px;
+  word-break: keep-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  float: left;
+  text-align: center;
+}
+.vps-custom-default #signTool .styCom i.iconfont {
+  width: 17px;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.vps-custom-default #signTool .icon-tool-cabinet_icon:before,
+.vps-custom-default #signTool .icon-jiaotong:before,
+.vps-custom-default #signTool .icon-fangda:before {
+  margin-right: 8px;
+}
+
+.vps-custom-default #signTool .icon-tool-cabinet_icon {
+  font-size: 13px;
+}
+
+.vps-custom-default #signTool .el-col-12 {
+  width: 100%;
+}
+
+.vps-custom-default #signTool .el-icon--right {
+  color: #fff;
+}
+.vps-custom-default #signTool .el-dropdown{
+  font-size: 15px;
+}
+.vps-custom-default #signTool .toolContent {
+  position: absolute;
+  background: rgba(12, 43, 74, .8);
+  padding: 3px 16px;
+  top: 90px;
+  border-radius: 8px;
+  right: 342px;
+}
+
+.vps-custom-default #signTool .toolContent p {
+  color: #fff;
+  line-height: 32px;
+  font-size: 13px;
+  cursor: pointer;
+  -webkit-transition: color 0.1s linear;
+  transition: color 0.1s linear;
+}
+
+.vps-custom-default #signTool .toolContent p.on {
+  color: #52bd27;
+}
+
+.vps-custom-default #signTool .icon-huodongqizhibiaoji:before,
+.vps-custom-default #signTool .icon-ruler:before {
+  margin-right: 8px;
+}
+.vps-custom-default #signTool .signToolHide{
+  display: none;
+}
+.vps-custom-default div.hotCities div.hotbut span{
+  cursor: pointer;
+  -webkit-transition: color 0.1s linear;
+  transition: color 0.1s linear;
+}
+.vps-custom-default div.hotCities div.hotbut span:hover,
+.vps-custom-default div.hotCities div.hotbut span.cur{
+  color: #0b6a26;
+}
+
+/**地址切换样式覆盖 **/
+.vps-custom-default .el-popover{
+  position: absolute;
+  background: rgba(12, 43, 74, .8);
+  min-width: 100px;
+  border-radius: 4px;
+  border: 1px solid #0d2e4f;
+  padding: 12px;
+  z-index: 2000;
+  color: #fff;
+  line-height: 1.4;
+  text-align: justify;
+  font-size: 14px;
+  -webkit-box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+}
+.vps-custom-default .el-popover .el-input__inner {
+  background: rgba(12, 43, 74, 0);
+  border: 0;
+  border-radius: 0;
+  font-size: 15px;
+  color: #fff;
+  padding-right: 20px !important;
+}
+.vps-custom-default .el-popper[x-placement^=bottom] .popper__arrow{
+  top: -6px;
+  left: 50%;
+  margin-right: 3px;
+  border-top-width: 0;
+  border-bottom-color: #456da8;
+}
+.vps-custom-default .el-popper[x-placement^=bottom] .popper__arrow::after{
+  top: 1px;
+  margin-left: -6px;
+  border-top-width: 0;
+  border-bottom-color: #456da8;
+}
+/**地址切换样式覆盖 **/
+
+.vps-custom-default .pointwind{
+  background-color: rgb(12, 43, 74);
+  padding: 5px;
+  width: 300px;
+}
+.vps-custom-default .pointwind input{
+  width: 100%;
+  line-height: 30px;
+  padding-left: 10px;
+  margin-bottom: 10px;
+  background-color: transparent;
+  border-radius: 5px;
+  color: #fff;
+  border:1px solid #fff;
+}
+.vps-custom-default .pointwind textarea{
+  width: 100%;
+  padding-left: 10px;
+  background-color: transparent;
+  border:1px solid #fff;
+  color: #fff;
+  font-size: 14px;
+}
+.vps-custom-default .pointwind textarea::-webkit-input-placeholder{
+  color: #fff;
+  font-size: 14px;
+}
+/** 工具栏 end **/
+
+/** 电子围栏样式 start**/
+.vps-custom-default .enclosureDiv {
+    color: #fff;
+    padding: 10px 0;
+    position: relative;
+    line-height: 24px;
+}
+.vps-custom-default .enclosureDiv .add {
+    font-size: 22px;
+    float: right;
+    cursor: pointer;
+}
+
+.vps-custom-default .enclosureDiv .option {
+    font-size: 19px;
+    margin-left: 13px;
+    cursor: pointer;
+}
+.vps-custom-default .enclosureDiv .line {
+  padding: 8px 0;
+}
+.vps-custom-default .enclosureDiv .labelInfo{
+  color: #fff;
+  background: rgb(12, 43, 74);
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.vps-custom-default .enclosureDiv .el-checkbox {
+  font-size: 15px;
+  color: #fff;
+}
+.vps-custom-default .enclosureDiv .form {
+  line-height: 40px;
+}
+.vps-custom-default .enclosureDiv .form .name input{
+  background: transparent;
+  line-height: 25px;
+  color:#fff;
+  border: 0;
+}
+.vps-custom-default .enclosureDiv .form .title i.iconfont{
+  cursor:pointer;
+  font-size: 22px;
+}
+.vps-custom-default .enclosureDiv .form .graphical p i.iconfont{
+  font-size: 30px;
+  display: block;
+}
+.vps-custom-default .enclosureDiv .form .graphical p{
+  width: 100px;
+  display: inline-block;
+  text-align: center;
+  line-height: 30px;
+  cursor: pointer;
+}
+.vps-custom-default .enclosureDiv .form .rule .ruleCgro{
+  display: inline-block;
+}
+.vps-custom-default .enclosureDiv .el-checkbox__inner{
+  background-color: transparent;
+}
+.vps-custom-default .enclosureDiv .form .addvhe span{
+  cursor: pointer;
+}
+.vps-custom-default .enclosureDiv .form .addvhe i.iconfont{
+  font-size: 26px;
+  vertical-align: sub;
+}
+.vps-custom-default .enclosureDiv .form .remark textarea{
+  display: inline;
+  width: 230px;
+  vertical-align: middle;
+  background-color: transparent;
+  color: #fff;
+  font-size: 16px;
+}
+.vps-custom-default .enclosureDiv .form .addvhe span:hover,
+.vps-custom-default .enclosureDiv .form .graphical p:hover{
+  color: #067816;
+}
+.vps-custom-default .enclosureDiv .form .graphical p.cur{
+  color: #067816;
+}
+.vps-custom-default #efStyle .el-input__inner {
+  background: rgba(12, 43, 74, 0);
+  border: 0;
+  border-radius: 0;
+  font-size: 15px;
+  color: #fff;
+  padding-right: 20px !important;
+}
+.vps-custom-default #efStyle .el-input--medium .el-input__inner {
+  width: 230px;
+}
+.vps-custom-default #efStyle .el-checkbox__label{
+  width: 155px;
+}
+/** 电子围栏样式 end **/
+
+/** 个人菜单样式 start **/
+.vps-custom-default #setTool .headPortrait {
+  position: absolute;
+  top: 37.5px;
+  right: 35px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  overflow: hidden;
+}
+.vps-custom-default #setTool .online {
+  animation: rotate-shadowColor 2s infinite;
+}
+.vps-custom-default #setTool .offline {
+     -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    -ms-filter: grayscale(100%);
+    -o-filter: grayscale(100%);
+    filter: grayscale(100%);
+    filter: gray;
+}
+.vps-custom-default #setTool .setBox p.disabeld {
+  color: #9E9E9E;
+  cursor: default;
+}
+.vps-custom-default #setTool .rightToolBox {
+  position: relative
+}
+.vps-custom-default #setTool .el-radio__inner{
+  background: rgba(0, 0, 0, 0);
+  border-color: #fff;
+}
+.vps-custom-default #setTool .el-radio__input.is-checked .el-radio__inner{
+  background: rgba(0, 0, 0, 0);
+  border-color: #fff;
+}
+.vps-custom-default #setTool .el-radio{
+  color: #fff;
+}
+.vps-custom-default #setTool .el-range-editor--medium.el-input__inner{
+  width: 100%;
+  background: rgba(0,0,0,0);
+  border-color: #446ca7;
+}
+.vps-custom-default #setTool .el-range-editor--medium .el-range-input{
+  background: rgba(0,0,0,0);
+}
+.vps-custom-default #setTool .namelist{
+  border: 1px solid #446ca7;
+  padding: 6px 12px;
+}
+.vps-custom-default #setTool .namelist span{
+  margin-right: 12px;
+  cursor: pointer;
+}
+.vps-custom-default #setTool .bottomBtn{
+  height: 30px;
+  text-align: center;
+  background: rgba(0,111,230,.8);
+  cursor: pointer;
+}
+.vps-custom-default #setTool .el-range-editor--medium .el-range-separator{
+  color: #fff;
+}
+.vps-custom-default #setTool .setBox {
+  position: absolute;
+  top: 110px;
+  right: 10px;
+  line-height: 30px;
+  background: rgba(12, 43, 74, .8);
+  height: 0;
+  overflow: hidden;
+  width: 220px;
+}
+.vps-custom-default #setTool .setBox img.activeTheme{
+  display: none;
+}
+.vps-custom-default #setTool .setBox .cur img.activeTheme{
+  display: block;;
+}
+.vps-custom-default #setTool .animationDownHeight{
+  height: 345px;
+}
+.vps-custom-default #setTool .setBox p {
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.vps-custom-default #setTool .setBox p:before {
+  margin-right: 8px;
+}
+
+.vps-custom-default #setTool .themeSelect {
+  height: 80px;
+  display: inline-block;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  position: relative;
+}
+
+.vps-custom-default #setTool .themeSelect span {
+  font-size: 12px;
+  text-align: center;
+  display: block;
+}
+
+.vps-custom-default #setTool .themeImg {
+  width: 55px;
+  height: 55px;
+  border: 1px solid #7ecef4;
+}
+
+.vps-custom-default #setTool .activeTheme {
+  position: absolute;
+  right: 0;
+}
+
+.vps-custom-default #setTool .setInfo {
+  position: absolute;
+  top: 110px;
+  right: 240px;
+  padding: 12px;
+  line-height: 30px;
+  background: rgba(12, 43, 74, .8);
+  width: 370px;
+  color: #fff;
+}
+.vps-custom-default #setTool .workHandoverBox {
+  position: absolute;
+  top: 110px;
+  right: 50%;
+  margin-right: -185px;
+  line-height: 30px;
+  background: rgba(12, 43, 74, .8);
+  width: 320px;
+  color: #fff;
+}
+.vps-custom-default #setTool .workHandoverContent{
+  padding: 12px;
+}
+.vps-custom-default #setTool .HandoverContent{
+  display: none;
+}
+.vps-custom-default #setTool .seach{
+  float: right;
+  margin-right: 18px;
+  font-size: 17px;
+  cursor: pointer;
+}
+.vps-custom-default #setTool .zhankai{
+  float: right;
+  font-size: 18px;
+  margin-right: 1px;
+  cursor: pointer;
+}
+.vps-custom-default #setTool .handoverHead {
+  margin: 4px 0;
+}
+.vps-custom-default #setTool .rightIcon {
+  float: right;
+  font-size: 20px;
+}
+
+.vps-custom-default #setTool .leftTit {
+  font-size: 15px;
+}
+
+.vps-custom-default #setTool .setInfoContent {
+  cursor: pointer;
+}
+
+.vps-custom-default #setTool .detailsP {
+  color: #fff;
+}
+
+.vps-custom-default #setTool .el-checkbox + .el-checkbox {
+  margin-left: 0;
+}
+
+.vps-custom-default #setTool .checkInfo {
+  width: 50%;
+}
+
+.vps-custom-default #setTool .opendAndshrinkRight {
+  cursor: pointer;
+  color: #fff;
+  font-size: 16px;
+  display: inline-block;
+  position: absolute;
+  right: 12px;
+  border-radius: 7px;
+  top: 252px;
+  padding: 11px 16px;
+  background: rgba(12, 43, 74, .8);
+}
+
+.vps-custom-default .potRight {
+  right: 625px !important
+}
+.vps-custom-default #setTool .setChecks{
+  display: none;
+  overflow-y: scroll;
+  max-height: 180px;
+}
+/** 个人菜单样式 end **/
+
+/** 监控列表框样式 start **/
+.vps-custom-default #carInfo .carInfo {
+    position: fixed;
+    bottom: 30px;
+    left: 405px;
+    width: calc(100vw - 440px);
+    height: calc(100vh - 560px);
+    max-height: 390px;
+    min-height: 260px;
+  }
+.vps-custom-default #carInfo .tuptree{
+    left:35px;
+    width:calc(100vw - 70px);
+  }
+.vps-custom-default #carInfo .tup{
+    height: 0;
+    min-height: 0;
+  }
+.vps-custom-default #carInfo .tup .headInfo{
+    height: 0;
+    overflow: hidden;
+  }
+.vps-custom-default #carInfo .tup .content{
+    padding: 0;
+  }
+.vps-custom-default #carInfo .tup i.xiangxiaIcon{
+    -webkit-transform: rotate(-180deg);
+    transform: rotate(-180deg);
+  }
+.vps-custom-default #carInfo .labelInfo {
+    color: #fff;
+    width: 76px;
+    height: 36px;
+    display: inline-block;
+    text-align: center;
+    line-height: 36px;
+    margin-right: 7px;
+    cursor: pointer;
+    background: rgba(10, 37, 66, .8);
+    position: relative;
+    -webkit-transition: all 0.2s linear;
+    transition: all 0.2s linear;
+  }
+.vps-custom-default #carInfo .policeBadgeSty, .vps-custom-default #carInfo .abnomalBadgeSty{
+  background: #da1c1c;
+  border-radius: 8px;
+  color: #fff;
+  position: absolute;
+  right: 0;
+  top: -9px;
+  font-size: 12px;
+  line-height: 0;
+  padding: 8px 6px;
+  z-index: 2;
+}
+.vps-custom-default #carInfo .content {
+    background: rgba(10, 37, 66, .8);
+    height: calc(100% - 48px);
+    padding: 9px;
+    margin-top: 12px;
+    width: 100%;
+    /*overflow-y: scroll;*/
+    overflow: hidden;
+    position: relative;
+    -webkit-transition: all 0.1s;
+    transition: all 0.1s;
+  }
+
+.vps-custom-default #carInfo .labelInfoActive {
+    background: #0b6a26;
+  }
+
+.vps-custom-default #carInfo .labelInfoActive i {
+    background: #0b6a26;
+  }
+
+.vps-custom-default #carInfo .rightTab {
+    float: right;
+  }
+.vps-custom-default #carInfo .rightTab span {
+    color: #fff;
+    border-radius: 14px;
+    background: rgb(12, 43, 74);
+    padding: 8px 20px;
+    cursor: pointer;
+  }
+
+.vps-custom-default #carInfo .carInfoOpen {
+    position: absolute;
+    bottom: -62px;
+    left: 50%;
+    margin-left:-30px;
+    background: rgba(12, 43, 74, .8);
+    width: 60px;
+    height: 60px;
+    border-radius: 60px;
+    text-align: center;
+    cursor: pointer;
+  }
+
+.vps-custom-default #carInfo .xiangxiaIcon {
+    font-size: 20px;
+    color: #fff;
+    display: inline-block;
+    position: relative;
+    top:-5px;
+    -webkit-transition: all 0.1s;
+    transition: all 0.1s;
+    animation: updown-infinite 1.8s linear infinite;
+  }
+.vps-custom-default #carInfo .labelInfoActive .left-top{
+    left: -4px;
+    top: -4px;
+    border-color: #0b6a26;
+  }
+.vps-custom-default #carInfo .labelInfoActive .let-bottom{
+    left: -4px;
+    bottom: -4px;
+    border-color: #0b6a26;
+  }
+.vps-custom-default #carInfo .labelInfoActive .right-top{
+    right: -4px;
+    top: -4px;
+    border-color: #0b6a26;
+  }
+.vps-custom-default #carInfo .labelInfoActive .right-bottom{
+    right: -4px;
+    bottom: -4px;
+    border-color: #0b6a26;
+  }
+
+/** 监控列表框样式 end **/
+
+
+/** 左侧切换框 start**/
+.vps-custom-default #toolBox{
+  position: fixed;
+  left: 35px;
+  top: 100px;
+  bottom: 35px;
+}
+.vps-custom-default #toolBox .treeDiv {
+  position: relative;
+  max-height: 100%;
+  background: rgba(12, 43, 74,.8);
+  width: 350px;
+  margin-top: 5px;
+  padding: 0 18px;
+  overflow: hidden;
+  height: 0;
+}
+.vps-custom-default #toolBox .navs {
+  color: #fff;
+  margin-top: 8px;
+}
+.vps-custom-default #toolBox .treeDiv i.cur {
+  color: #067816;
+}
+
+.vps-custom-default #toolBox .navTit {
+  font-size: 16px;
+  display: inline-block;
+  width: 162px;
+}
+
+.vps-custom-default #toolBox .icon-juxingkaobei,
+.vps-custom-default #toolBox .icon-dianziweilan,
+.vps-custom-default #toolBox .icon-guanzhu,
+.vps-custom-default #toolBox .icon-shaixuan {
+  font-size: 21px;
+  margin-left: 12px;
+  cursor: pointer;
+}
+
+.vps-custom-default #toolBox .icon-guanzhu1 {
+  color: #067816;
+}
+
+/** 左侧切换框 end**/
+
+/** 下拉菜单 样式覆盖  start**/
+.vps-custom-default .el-select-dropdown{
+  position: absolute;
+  z-index: 1001;
+  border: solid 1px #0d2e4f;
+  border-radius: 4px;
+  background-color: #0d2e4f;
+  -webkit-box-shadow: 0 2px 12px 0 rgba(0,0,0,.3);
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,.3);
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 5px 0;
+}
+.vps-custom-default .el-select-dropdown__item{
+  font-size: 14px;
+  padding: 0 20px;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #ffffff;
+  height: 34px;
+  line-height: 34px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.vps-custom-default .el-select-dropdown__item.hover{
+  background-color: #123d65;
+}
+/** 左侧树样式覆盖 start **/
+.vps-custom-default #treeSty,
+.vps-custom-default #followCar{
+  height: 100%;
+}
+.vps-custom-default #treeSty .el-tree,
+.vps-custom-default #followCar .el-tree{
+  background: transparent;
+}
+.vps-custom-default #treeSty .treepage{
+  text-align: center;
+  color: #CDDC39;
+  cursor: pointer;
+  -webkit-transition: color 0.2s linear;
+  transition: color 0.2s linear;
+}
+.vps-custom-default #treeSty .treepage div.el-loading-spinner{
+  top: 50%;
+  margin-top: 0;
+  width: 100%;
+  text-align: center;
+  position: initial;
+}
+.vps-custom-default #treeSty .treepage:hover{
+  color: #067816;
+}
+.vps-custom-default #treeSty .treepage .iconfont{
+  vertical-align: middle;
+  position: relative;
+  animation: updown-infinite 1.5s linear infinite;
+}
+
+.vps-custom-default #trees, .vps-custom-default #searchTree{
+  height: calc(100% - 55px);
+}
+.vps-custom-default #treeSty .el-tree-node__content {
+  color: #fff;
+}
+.vps-custom-default .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content{
+  background-color: #0a223c;
+}
+.vps-custom-default #treeSty .el-tree-node__content:hover,
+.vps-custom-default #followCar .el-tree-node__content:hover {
+  background: rgb(12, 43, 74);
+}
+
+.vps-custom-default #treeSty .el-tree-node:focus > .el-tree-node__content,
+.vps-custom-default #followCar .el-tree-node:focus > .el-tree-node__content {
+  background: rgb(12, 43, 74);
+}
+
+.vps-custom-default #treeSty .el-checkbox {
+  font-size: 15px;
+  color: #fff;
+}
+
+.vps-custom-default #treeSty .el-table__header-wrapper {
+  background: rgb(10, 37, 66) !important;
+  /*opacity: 0.8;*/
+}
+.vps-custom-default #treeSty .el-icon-loading,#treeSty .el-loading-text{
+  color: #fff;
+}
+.vps-custom-default #treeSty .el-tree__empty-text{
+  color: #fff;
+  display: none;
+}
+.vps-custom-default #treeSty .el-checkbox__input.is-disabled .el-checkbox__inner,
+.vps-custom-default #followCar .el-checkbox__input.is-disabled .el-checkbox__inner{
+  display: none;
+}
+.vps-custom-default #treeSty span.tdevice,
+.vps-custom-default #followCar span.tdevice{
+  color: #067816;
+  font-size: 15px;
+  text-indent: 13px;
+  display: inline-block;
+}
+/** 左侧树样式覆盖 end **/
+/*小边角样式*/
+.vps-custom-default .vpsLayer .edgeDiv{
+  position: relative;
+}
+.vps-custom-default .vpsLayer .left-top,
+.vps-custom-default .vpsLayer .right-top,
+.vps-custom-default .vpsLayer .let-bottom,
+.vps-custom-default .vpsLayer .right-bottom{
+  -webkit-transition: all 0.2s linear;
+  transition: all 0.2s linear;
+}
+.vps-custom-default .vpsLayer .left-top{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #456DA8;
+  border-left: 2px solid #456DA8;
+  top: 0;
+  left: 0;
+}
+.vps-custom-default .vpsLayer .right-top{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #456DA8;
+  border-right: 2px solid #456DA8;
+  right: 0;
+  top: 0;
+}
+.vps-custom-default .vpsLayer .let-bottom{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-left: 2px solid #456DA8;
+  border-bottom: 2px solid #456DA8;
+  bottom:0;
+  left: 0;
+}
+.vps-custom-default .vpsLayer .right-bottom{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #456DA8;
+  border-bottom: 2px solid #456DA8;
+  bottom:0;
+  right: 0;
+}
+/*end*/
+/*原地设防弹框样式*/
+.vps-custom-default #comFrame .box{
+  /*padding: 10px 12px;*/
+  position: absolute;
+  width: 350px;
+  left: 50%;
+  top: 10%;
+  margin-left: -175px;
+}
+.vps-custom-default #comFrame .plateNumber{
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+.vps-custom-default #comFrame .carOwner{
+  margin-left: 4px;
+}
+.vps-custom-default #comFrame .lineInfo{
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+.vps-custom-default #comFrame .icon-78:before {
+  font-size: 17px;
+  margin-left: -1px;
+}
+.vps-custom-default #comFrame .icon-weizhi:before {
+  font-size: 15px;
+  margin-right: 6px;
+}
+.vps-custom-default #comFrame .icon-juli:before{
+  margin-right: 2px;
+}
+.vps-custom-default #comFrame .el-input--medium{
+  width: 21%;
+}
+.vps-custom-default #comFrame .determine{
+  text-align: center;
+}
+.vps-custom-default #comFrame .el-button--medium{
+  background: rgba(12, 43, 74, 0);
+  padding: 6px 12px;
+}
+.vps-custom-default #comFrame .box{
+  color: #fff;
+  background: rgba(12, 43, 74, .8);
+}
+.vps-custom-default #comFrame .plateNumber{
+  background: #01479d;
+  border: 1px solid #fff;
+}
+.vps-custom-default #comFrame .plateNumberBgk{
+  background: #01479d;
+}
+/*.vps-custom-default #comFrame .lt{*/
+  /*color: #00d452*/
+/*}*/
+.vps-custom-default #comFrame .hrColor{
+  color: #fff
+}
+.vps-custom-default #comFrame .el-button--medium{
+  color: #ffffff;
+}
+.vps-custom-default #comFrame .el-input--medium .el-input__inner{
+  height: 24px;
+  background: rgba(12, 43, 74, 0);
+  padding: 0 6px;
+}
+.vps-custom-default #comFrame .sendBtn{
+  height: 30px;
+  background: rgba(0,111,230,.8);
+  line-height: 30px;
+  text-align: center;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 15px;
+}
+/*end*/
+
+/*指令弹框样式*/
+.vps-custom-default #instructionsFrame .plateNumberBgk{
+  background: #01479d;
+}
+.vps-custom-default #instructionsFrame .plateNumber{
+  background: #01479d;
+  border: 1px solid #fff;
+}
+.vps-custom-default #instructionsFrame .box{
+  position: absolute;
+  width: 330px;
+  left: 50%;
+  top: 10%;
+  margin-left: -175px;
+  background: rgba(12, 43, 74, .8);
+  color: #ffffff;
+}
+.vps-custom-default #instructionsFrame .plateNumber{
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+.vps-custom-default #instructionsFrame .carOwner{
+  margin-left: 4px;
+}
+.vps-custom-default #instructionsFrame .screenBox{
+  overflow: hidden;
+  display: flex;
+  margin-top: 10px;
+}
+.vps-custom-default #instructionsFrame .leftScreen{
+  flex:1;
+  float: left;
+  border: 1px solid #456DA8;
+  height: 150px;
+  cursor: pointer;
+  padding: 6px 10px;
+  overflow-y: scroll;
+}
+.vps-custom-default #instructionsFrame .rightScreen{
+  margin-left: 5%;
+  flex:1;
+  float: left;
+  border: 1px solid #456DA8;
+  height: 150px;
+  padding: 6px 10px;
+}
+/*.vps-custom-default #instructionsFrame .el-radio+.el-radio {*/
+  /*margin-left: 48px;*/
+/*}*/
+.vps-custom-default #instructionsFrame .activeColor{
+  color: #088c1c;
+}
+.vps-custom-default #instructionsFrame .sendBtn{
+  height: 30px;
+  background: rgba(0,111,230,.8);
+  line-height: 30px;
+  text-align: center;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 15px;
+}
+.vps-custom-default #instructionsFrame .icon-dingwei3:before {
+  margin-right: 5px;
+}
+.vps-custom-default #instructionsFrame .el-radio{
+  color: #fff
+}
+/*end*/
+/*关注弹框样式*/
+.vps-custom-default #followFrame .box{
+  position: absolute;
+  width: 345px;
+  left: 50%;
+  top: 10%;
+  margin-left: -175px;
+  background: rgba(12, 43, 74, .8);
+  color: #ffffff;
+  /*padding: 10px 18px;*/
+}
+.vps-custom-default #followFrame .icon-iconfontguanbi:before {
+  font-size: 22px;
+}
+.vps-custom-default #followFrame .hrColor{
+  color: #fff;
+}
+.vps-custom-default #followFrame .boxContent{
+  margin: 12px 0;
+}
+.vps-custom-default #followFrame .radioBox{
+  overflow: hidden;
+  margin-left: 80px;
+}
+.vps-custom-default #followFrame .radioContent{
+  margin-right: 6px;
+  color: #ffffff;
+}
+.vps-custom-default #followFrame .guanzhuType{
+  line-height: 25px;
+}
+.vps-custom-default #followFrame .guanzhuInfo{
+  margin-top: 10px;
+}
+.vps-custom-default #followFrame .share{
+  margin-top: 10px;
+}
+.vps-custom-default #followFrame .determine{
+  text-align: center;
+}
+.vps-custom-default #followFrame .el-radio+.el-radio{
+  margin-left: 0;
+}
+.vps-custom-default #followFrame .el-radio__input.is-checked .el-radio__inner{
+  background: rgba(0, 0, 0, 0);
+  border-color: #fff
+}
+.vps-custom-default #followFrame .el-radio__inner{
+  background: rgba(0, 0, 0, 0);
+}
+.vps-custom-default #followFrame  .el-textarea{
+  width: 226px;
+}
+.vps-custom-default #followFrame .el-textarea__inner{
+  background: rgba(0, 0, 0, 0);
+  color: #fff;
+}
+.vps-custom-default #followFrame .el-button--medium{
+  background: rgba(0, 0, 0, 0);
+  color: #fff;
+  padding: 6px 12px;
+}
+.vps-custom-default #followFrame .sendBtn{
+  height: 30px;
+  background: rgba(0,111,230,.8);
+  line-height: 30px;
+  text-align: center;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 15px;
+}
+/*end*/
+/*历史轨迹样式  start***************/
+.vps-custom-default .el-dialog__headerbtn .el-dialog__close{
+  font-size: 24px;
+  color: #fff;
+}
+.vps-custom-default .el-dialog.is-fullscreen{
+  background: rgba(12, 43, 74, .8);
+}
+.vps-custom-default .el-dialog.is-fullscreen{
+  overflow: hidden;
+}
+.vps-custom-default .el-dialog__headerbtn{
+  z-index: 1;
+  color: #fff;
+}
+.vps-custom-default .el-dialog__body,
+.vps-custom-default .el-dialog__header{
+  padding: 0;
+}
+.vps-custom-default .trajectoryFrame .leftTopInfo {
+  position: absolute;
+  left: 20px;
+  top: 35px;
+  color: #fff;
+  background: rgba(12, 43, 74, .8);
+  padding: 10px 10px 0 10px;
+  width: 300px;
+  height: 54px;
+  overflow: hidden;
+}
+.vps-custom-default section.trajectoryFrame .el-input--suffix .el-input__inner{
+  background: transparent;
+  height: 46px;
+}
+.vps-custom-default .trajectoryFrame .plateNumber {
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+.vps-custom-default .trajectoryFrame .carOwner {
+  margin-left: 5px;
+  font-size: 15px;
+}
+
+.vps-custom-default .trajectoryFrame .leftTopInfo i.iconfont {
+  margin-left: 5px;
+  margin-top: 3px;
+}
+
+.vps-custom-default .trajectoryFrame .iconSex {
+  color: #0091fe;
+  display: inline-block;
+}
+
+.vps-custom-default .trajectoryFrame .iconProtect {
+  color: #fc6919;
+  display: inline-block;
+}
+
+.vps-custom-default .trajectoryFrame .rightTime {
+  position: absolute;
+  right: 20px;
+  top: 45px;
+}
+
+.vps-custom-default .trajectoryFrame .el-range-editor--medium.el-input__inner {
+  background: rgba(0, 0, 0, 0);
+}
+
+.vps-custom-default .trajectoryFrame .TrajectoryBox {
+  width: 100%;
+  position: absolute;
+  bottom: 30px;
+  padding: 0 20px;
+  height: 36vh;
+  overflow: hidden;
+}
+.vps-custom-default .trajectoryFrame .tup{
+  height: 0;
+}
+.vps-custom-default .trajectoryFrame .carInfoOpen {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  margin-left: -30px;
+  background: rgba(12, 43, 74, .8);
+  width: 60px;
+  height: 60px;
+  border-radius: 60px;
+  text-align: center;
+  cursor: pointer;
+}
+.vps-custom-default .trajectoryFrame .xiangxiaIcon {
+  /*transform: rotate(-180deg);*/
+  font-size: 20px;
+  color: #fff;
+  display: inline-block;
+  position: relative;
+  top:-5px;
+  -webkit-transition: all 0.1s;
+  transition: all 0.1s;
+  animation: updown-infinite 1.8s linear infinite;
+}
+.vps-custom-default .trajectoryFrame .tup i.xiangxiaIcon{
+  transform: rotate(-180deg);
+}
+.vps-custom-default .trajectoryFrame .TrajectoryDatas {
+  background: rgba(12, 43, 74, .8);
+  padding: 0 20px;
+  padding-bottom: 20px;
+}
+
+.vps-custom-default .trajectoryFrame .rightNav {
+  float: right;
+}
+
+.vps-custom-default .trajectoryFrame .rightNav i.iconfont {
+  margin-left: 36px;
+  font-size: 19px;
+  cursor: pointer;
+}
+.vps-custom-default .trajectoryFrame .rightNav i.el-icon-loading {
+  margin:14px 0 0 0;
+  font-size: 14px;
+  color: #fff;
+}
+
+.vps-custom-default .trajectoryFrame .leftBtn {
+  float: left;
+}
+
+.vps-custom-default .trajectoryFrame .leftBtn i {
+  cursor: pointer;
+  margin-right: 36px;
+  font-size: 19px;
+}
+
+.vps-custom-default .trajectoryFrame .controller {
+  padding: 18px 0;
+  overflow: hidden;
+  color: #ffffff;
+  border-bottom: 1px solid #305a82;
+}
+
+.vps-custom-default .trajectoryFrame .icon-houtui2:before {
+  margin-right: 12px;
+}
+
+.vps-custom-default .trajectoryFrame .icon-ai-rew-right:before {
+  margin-right: 12px;
+}
+
+.vps-custom-default .trajectoryFrame .ate {
+  color: #067816;
+}
+.vps-custom-default .trajectoryFrame .setFrame{
+  position: absolute;
+  right: 20px;
+  padding: 10px 12px;
+  width: 250px;
+  color: #ffffff;
+  z-index: 999;
+  background: rgba(12, 43, 74, .8);
+  top: 50%;
+  margin-top: -12vh;
+}
+.vps-custom-default .trajectoryFrame .boxContent{
+  /*display: flex;*/
+  /*flex-wrap:wrap;*/
+}
+.vps-custom-default .trajectoryFrame .checkSty{
+  margin-left: 0;
+  width: 50%;
+  line-height: 24px;
+}
+.vps-custom-default .trajectoryFrame .block{
+  position: absolute;
+  top: -11px;
+  width: 100%;
+  padding-right: 40px;
+}
+.vps-custom-default .trajectoryFrame .left-top{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #456DA8;
+  border-left: 2px solid #456DA8;
+  top: 0;
+  left: 0;
+}
+.vps-custom-default .trajectoryFrame .right-top{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #456DA8;
+  border-right: 2px solid #456DA8;
+  right: 0;
+  top: 0;
+}
+.vps-custom-default .trajectoryFrame .let-bottom{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-bottom: 2px solid #456DA8;
+  border-left: 2px solid #456DA8;
+  bottom: 0;
+  left: 0;
+}
+.vps-custom-default .trajectoryFrame .right-bottom{
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #456DA8;
+  border-bottom: 2px solid #456DA8;
+  right: 0;
+  bottom: 0;
+}
+.vps-custom-default .trajectoryFrame .openCarInfo{
+  float: right;
+  font-size: 18px;
+  cursor: pointer;
+  -webkit-transition: all 0.1s;
+  transition: all 0.1s;
+  min-height: 0;
+}
+.vps-custom-default .trajectoryFrame .downTup{
+  transform: rotate(-180deg);
+}
+.vps-custom-default .trajectoryFrame .autoHeight{
+  min-height: 305px
+}
+.vps-custom-default .trajectoryFrame .detailsInfo{
+  line-height: 25px;
+  font-size: 14px;
+  margin-top: 5px;
+}
+.vps-custom-default .trajectoryFrame .leftTiT{
+  float: left;
+}
+.vps-custom-default .trajectoryFrame .rightINfos{
+  overflow: hidden;
+  margin-left: 84px;
+}
+.vps-custom-default .trajectoryFrame .rightINfos p{
+  overflow: hidden;
+  text-overflow:ellipsis;
+  white-space: nowrap;
+}
+
+.vps-custom-default .trajectoryFrame .el-range-editor--medium .el-range-input {
+  background: rgba(0, 0, 0, 0);
+  color: #fff;
+}
+
+.vps-custom-default .trajectoryFrame .el-range-editor--medium .el-range-separator {
+  color: #ffffff;
+}
+/*加乘积改变不了颜色*/
+.vps-custom-default .el-input--small .el-input__inner {
+  color: #606266
+}
+
+
+.vps-custom-default .trajectoryFrame .plateNumberBgk{
+  background: #01479d;
+}
+.vps-custom-default .trajectoryFrame .plateNumber{
+  background: #01479d;
+  border: 1px solid #fff;
+  display: inline-block;
+  width: 100%;
+}
+/*end*/
+/*右侧弹框样式*/
+.vps-custom-default .el-notification{
+  padding: 8px;
+  z-index: 1999;
+}
+.vps-custom-default .el-notification__title{
+  font-size: 15px
+}
+.vps-custom-default .el-notification__content{
+  line-height: 19px;
+  font-size: 13px
+}
+/*end*/
+
+/*历史轨迹任务栏Badge 标记 样式重新定义 start*/
+.vps-custom-default div.tra_but .el-badge__content.is-fixed{
+  top: 3px;
+  right: 13px;
+  background-color: #da1c1c;
+  border: 0;
+}
+/*Badge 标记 样式重新定义 end*/
+/*行为分析图表页面样式*/
+/*个人信息*/
+.vps-custom-default #chartPage{
+  background: #0d0d1d;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  padding: 28px;
+  overflow-y: scroll;
+}
+.vps-custom-default #personalInfo .monitorHead{
+  overflow: hidden;
+  white-space: nowrap;
+}
+.vps-custom-default #personalInfo .timeScreen{
+  color: #fff;
+}
+.vps-custom-default #personalInfo{
+  background: rgba(12, 43, 74, .8);
+  padding: 13px 10px;
+  position: relative;
+  /*width: 298px;*/
+}
+.vps-custom-default #personalInfo .monitorHead i {
+  margin-left: 4px;
+  font-size: 16px;
+}
+
+.vps-custom-default #personalInfo .carBrandSpan {
+  min-width: 98px;
+  border-radius: 4px;
+  display: inline-block;
+  height: 34px;
+  background: #00479d;
+  padding: 0 6px;
+  padding-right: 5px;
+}
+
+.vps-custom-default #personalInfo .corpName{margin-top: 2%;font-weight: bold;}
+
+.vps-custom-default #personalInfo .carBrand {
+  border-radius: 3px;
+  border: 1px solid #fff;
+  color: #fff;
+  font-size: 18px;
+  padding: 3px;
+  line-height: 35px;
+}
+
+.vps-custom-default #personalInfo .carOwnerName {
+  color: #fff;
+  font-size: 18px;
+  margin-left: 8px;
+}
+.vps-custom-default #personalInfo .infoContent{
+  color: #fff;
+  word-wrap:break-word;
+}
+.vps-custom-default #personalInfo .leftTits{
+  float: left;
+}
+.vps-custom-default #personalInfo .rightData{
+  margin-left: 70px;
+  overflow: hidden;
+  text-overflow:ellipsis;
+  white-space: nowrap;
+}
+.vps-custom-default #personalInfo .line{
+  clear: both;
+}
+.vps-custom-default #personalInfo .line .leftTits{
+    font-size: 14px;
+}
+
+.vps-custom-default #personalInfo .timeTable{
+  margin-top: 2%;
+  color: #fff;
+  overflow: hidden;
+  line-height: 24px;
+  white-space: nowrap;
+}
+.vps-custom-default #personalInfo .timeTable span:first-of-type{
+    font-size: 14px;
+}
+.vps-custom-default #personalInfo .timeSpan{
+    cursor: pointer;
+    border: 1px solid;
+    padding: 2px 3px;
+    border-radius: 5px;
+    margin-right: 4px;
+    font-size: 12px;
+}
+.vps-custom-default #personalInfo .activeTime{
+  color: #0b6a26;
+  border-color: #0b6a26;
+}
+/*end*/
+
+
+
+/*page 页面样式 */
+/*mapTool 页面*/
+.vps-custom-default #mapTool {
+  padding: 40px;
+  overflow: hidden;
+  position: absolute;
+  z-index: -3;
+}
+/*end*/
+/*end*/
+
+/*components 组件样式*/
+/* Behavier/alarm */
+.vps-custom-default #carPoliceBox{
+  background: rgba(12, 43, 74, .8);
+  padding: 17px;
+  height: 288px;
+  position: relative;
+}
+.vps-custom-default #carPoliceBox .infoTit{
+  color: #fff;
+  clear: both;
+  line-height: 30px;
+}
+.vps-custom-default #carPoliceBox .detail{
+  width: 30%;
+  float: left;
+}
+.vps-custom-default #carPoliceBox .header{
+  color: #2f76db;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+.vps-custom-default #carPoliceBox .infoTit span{
+  float: right;
+}
+.vps-custom-default #carPoliceBox #alarmChart{
+  margin-left: 30%;
+}
+/*end*/
+/* Behavier/dayMileage */
+.vps-custom-default #mileageChartComents{
+  background: rgba(12, 43, 74, .8);
+  padding: 24px 0;
+  height: 285px;
+  position: relative;
+}
+/*end*/
+/* Behavier/driveTime */
+.vps-custom-default #driveTimeChartComents{
+  background: rgba(12, 43, 74, .8);
+  padding: 24px 0;
+  height: 285px;
+  position: relative;
+}
+/*end*/
+/* Behavier/personal */
+.vps-custom-default #behavierBox .carCode{
+  height: 28px;
+  line-height: 28px;
+  padding: 8px;
+  background:#00499d;
+  border-radius: 2px;
+  position: relative;
+}
+.vps-custom-default #behavierBox .carCode::before{
+  width: 90%;
+  height: 22px;
+  content: '';
+  border: 1px solid #FFF;
+  position: absolute;
+  top: 4px;
+  left: 4%;
+  border-radius: 2px;
+}
+.vps-custom-default #behavierBox .nameText{
+  margin-left: 20px;
+  font-size: 18px;
+  vertical-align: middle;
+}
+.vps-custom-default #behavierBox .sex{
+  color:#0092ff;
+  font-size:22px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.vps-custom-default #behavierBox .behavierContent .el-col{
+  line-height: 36px;
+}
+/*end*/
+/* Behavier/remarks */
+.vps-custom-default #remarksBox{
+  background: rgba(12, 43, 74, .8);
+  padding: 17px;
+  height: 289px;
+  position: relative;
+}
+.vps-custom-default #remarksBox .header{
+  color: #2f76db;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+.vps-custom-default #remarksBox .remarksInfo{
+  color: #fff;
+  line-height: 30px;
+  overflow-y: scroll;
+  height: 210px;
+}
+/*end*/
+/* Behavier/risk */
+.vps-custom-default #riskBox{
+  background: rgba(12, 43, 74, .8);
+  padding: 17px;
+  height: 550px;
+  position: relative;
+}
+.vps-custom-default #riskBox .header{
+  color: #2f76db;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+/*end*/
+/* Behavier/speed */
+.vps-custom-default #speedChartComents{
+  background: rgba(12, 43, 74, .8) !important;
+  padding: 17px !important;
+  height: 288px !important;
+  position: relative !important;
+}
+/*Behavier/stopElectric */
+.vps-custom-default #stopElectricBox{
+  background: rgba(12, 43, 74, .8) !important;
+  padding: 17px !important;
+  height: 288px !important;
+  position: relative !important;
+}
+.vps-custom-default #stopElectricBox .header{
+  position: absolute !important;
+  z-index: 2 !important;
+  left: 20px !important;
+  top: 20px !important;
+  color: #2f76db !important;
+  font-size: 18px !important;
+}
+/*Behavier/timeAnalysis */
+.vps-custom-default #timeAnalysis{
+  background: rgba(12, 43, 74, .8);
+  height: 289px;
+  position: relative;
+}
+.vps-custom-default #timeAnalysis .header{
+  position: absolute;
+  z-index: 2;
+  left: 20px;
+  top: 20px;
+  color: #2f76db;
+  font-size: 18px;
+}
+/*Frequent*/
+.vps-custom-default #placeCharts .point{
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background:rgba(244,233,27,1);
+  position: absolute;
+  left: 730px;
+  top: 80px;
+  z-index: 9;
+}
+.vps-custom-default #placeCharts .point1{
+  background:rgba(244,233,27,.7);
+  left: 400px;
+  top: 200px;
+}
+.vps-custom-default #placeCharts .point2{
+  background:rgba(244,233,27,.9);
+  left: 650px;
+  top: 250px;
+}
+.vps-custom-default #placeCharts .point3{
+  background:rgba(244,233,27,1);
+  left: 800px;
+  top: 350px;
+}
+.vps-custom-default #placeCharts .point4{
+  background:rgba(244,233,27,1);
+  left: 700px;
+  top: 200px;
+}
+.vps-custom-default #placeCharts .point5{
+  background:rgba(244,233,27,.7);
+  left: 900px;
+  top: 100px;
+}
+.vps-custom-default #placeCharts .point6{
+  background:rgba(244,233,27,.8);
+  left: 1100px;
+  top: 200px;
+}
+.vps-custom-default #placeCharts .point7{
+  background:rgba(244,233,27,1);
+  left: 1000px;
+  top: 380px;
+}
+.vps-custom-default #placeCharts .timeAnalysisBG{
+  background: rgba(12, 43, 74, .8);
+  width: 1300px;
+  height: 250px;
+}
+.vps-custom-default #placeCharts #timeAnalysisChart{
+  z-index: 9 !important;
+  width: 93% !important;
+  height: 250px !important;
+  margin: 24px !important;
+}
+
+.vps-custom-default #placeBox{
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  bottom: 30px;
+  width: 26%;
+  border: 1px solid #0a2a49;
+  border-radius: 4px;
+  z-index: 9;
+}
+.vps-custom-default #placeBox .chartBg{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(12, 43, 74, .8);
+  opacity: 0.8;
+}
+.vps-custom-default #placeBox .content{
+  padding: 20px 20px 10px 20px;
+  color: #FFF;
+  font-size: 16px;
+}
+.vps-custom-default #placeBox .content_text{
+  padding: 0 20px;
+  color: #FFF;
+  font-size: 14px;
+  text-align: center;
+}
+.vps-custom-default #placeBox .content_text .el-col{
+  padding: 8px 0 0 0;
+  cursor: pointer;
+}
+/*电子围栏弹框样式*/
+.vps-custom-default #enclosureFrame .box{
+  position: absolute;
+  width: 345px;
+  left: 50%;
+  top: 10%;
+  margin-left: -175px;
+  background: rgba(12, 43, 74, .8);
+  color: #ffffff;
+  padding: 10px 18px;
+}
+.vps-custom-default #enclosureFrame .iconClose{
+  float: right;
+  margin-left: 11px;
+}
+.vps-custom-default #enclosureFrame .icon-iconfontguanbi:before {
+  font-size: 22px;
+}
+/*指令弹框*/
+.vps-custom-default #instructionsFrame .el-radio__input.is-checked .el-radio__inner{
+  background: rgba(0, 0, 0, 0);
+  border-color: #fff
+}
+.vps-custom-default #instructionsFrame .el-radio__inner{
+  background: rgba(0, 0, 0, 0);
+}
+/*监控列表详情样式*/
+.vps-custom-default #monitorListDetails .monitorHead {
+  padding-left: 20px;
+}
+
+.vps-custom-default #monitorListDetails .monitorHead i {
+  margin-left: 4px;
+  font-size: 18px;
+}
+
+.vps-custom-default #monitorListDetails .carBrandSpan {
+  min-width: 109px;
+  border-radius: 4px;
+  display: inline-block;
+  height: 38px;
+  background: #00479d;
+  padding: 0 6px;
+}
+
+.vps-custom-default #monitorListDetails .carBrand {
+  border-radius: 3px;
+  border: 1px solid #fff;
+  color: #fff;
+  font-size: 20px;
+  padding: 3px;
+  line-height: 38px;
+}
+
+.vps-custom-default #monitorListDetails .carOwnerName {
+  color: #fff;
+  font-size: 21px;
+  margin-left: 12px;
+}
+
+.vps-custom-default #monitorListDetails .monitorContent {
+  padding: 12px;
+  padding-top: 0;
+}
+
+.vps-custom-default #monitorListDetails .equipment {
+  margin-top: 10px;
+  clear: both;
+  overflow: hidden;
+  color: #fff;
+}
+
+.vps-custom-default #monitorListDetails .images {
+  width: 140px;
+  height: 80px;
+  float: left;
+  margin-right: 16px;
+}
+
+.vps-custom-default #monitorListDetails .infoBox {
+  margin-right: 24px;
+  float: left;
+  max-width: 460px;
+}
+
+.vps-custom-default #monitorListDetails .infoBox p {
+  line-height: 20px;
+}
+/*报警列表详情样式*/
+.vps-custom-default #policeDetails .monitorHead {
+  padding-left: 20px;
+}
+
+.vps-custom-default #policeDetails .monitorHead i {
+  margin-left: 4px;
+  font-size: 18px;
+}
+
+.vps-custom-default #policeDetails .carBrandSpan {
+  min-width: 109px;
+  border-radius: 4px;
+  display: inline-block;
+  height: 38px;
+  background: #00479d;
+  padding: 0 6px;
+}
+
+.vps-custom-default #policeDetails .carBrand {
+  border-radius: 3px;
+  border: 1px solid #fff;
+  color: #fff;
+  font-size: 20px;
+  padding: 3px;
+  line-height: 38px;
+}
+
+.vps-custom-default #policeDetails .carOwnerName {
+  color: #fff;
+  font-size: 21px;
+  margin-left: 12px;
+}
+
+.vps-custom-default #policeDetails .monitorContent {
+  padding: 12px;
+  padding-top: 0;
+}
+
+.vps-custom-default #policeDetails .equipment {
+  margin-top: 10px;
+  clear: both;
+  overflow: hidden;
+  color: #fff;
+}
+
+.vps-custom-default #policeDetails .images {
+  width: 140px;
+  height: 80px;
+  float: left;
+  margin-right: 16px;
+}
+
+.vps-custom-default #policeDetails .infoBox {
+  margin-right: 24px;
+  float: left;
+  max-width: 460px;
+}
+
+.vps-custom-default #policeDetails .infoBox p {
+  line-height: 20px;
+}
+/*异常列表详情样式*/
+.vps-custom-default #abnormalDetails .monitorHead {
+  padding-left: 20px;
+}
+
+.vps-custom-default #abnormalDetails .monitorHead i {
+  margin-left: 4px;
+  font-size: 18px;
+}
+
+.vps-custom-default #abnormalDetails .carBrandSpan {
+  min-width: 109px;
+  border-radius: 4px;
+  display: inline-block;
+  height: 38px;
+  background: #00479d;
+  padding: 0 6px;
+}
+
+.vps-custom-default #abnormalDetails .carBrand {
+  border-radius: 3px;
+  border: 1px solid #fff;
+  color: #fff;
+  font-size: 20px;
+  padding: 3px;
+  line-height: 38px;
+}
+
+.vps-custom-default #abnormalDetails .carOwnerName {
+  color: #fff;
+  font-size: 21px;
+  margin-left: 12px;
+}
+
+.vps-custom-default #abnormalDetails .monitorContent {
+  padding: 12px;
+  padding-top: 0;
+}
+
+.vps-custom-default #abnormalDetails .equipment {
+  margin-top: 10px;
+  clear: both;
+  overflow: hidden;
+  color: #fff;
+}
+
+.vps-custom-default #abnormalDetails .images {
+  width: 140px;
+  height: 80px;
+  float: left;
+  margin-right: 16px;
+}
+
+.vps-custom-default #abnormalDetails .infoBox {
+  margin-right: 24px;
+  float: left;
+  max-width: 460px;
+}
+
+.vps-custom-default #abnormalDetails .infoBox p {
+  line-height: 20px;
+}
+/*历史报警数据样式*/
+.vps-custom-default #lsPolice{
+  padding: 24px;
+  background: rgba(10, 37, 66, .8);
+}
+.vps-custom-default #lsPolice .el-input--medium .el-input__inner{
+  background: rgba(10, 37, 66, .0);
+}
+.vps-custom-default #lsPolice .el-input{
+  width: 160px;
+  float: right;
+}
+.vps-custom-default #lsPolice .comFontSize{
+  float: right;
+  font-size: 25px;
+  margin-left: 12px;
+  cursor: pointer;
+}
+.vps-custom-default #lsPolice .el-input__inner::-webkit-input-placeholder{
+  color: #acacac;
+  font-size: 14px;
+}
+/*历史异常数据样式*/
+.vps-custom-default #lsAbnormal{
+  padding: 24px;
+  background: rgba(10, 37, 66, .8);
+}
+.vps-custom-default #lsAbnormal .el-input--medium .el-input__inner{
+  background: rgba(10, 37, 66, .0);
+}
+.vps-custom-default #lsAbnormal .el-input{
+  width: 160px;
+  float: right;
+}
+.vps-custom-default #lsAbnormal .comFontSize{
+  float: right;
+  font-size: 25px;
+  margin-left: 12px;
+  cursor: pointer;
+}
+.vps-custom-default #lsAbnormal .el-input__inner::-webkit-input-placeholder{
+  color: #acacac;
+  font-size: 14px;
+}

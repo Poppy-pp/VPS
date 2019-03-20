@@ -1,0 +1,904 @@
+<!--*
+* @description: 左侧树
+* @author: wp,wqh
+* @update: 2018-05-5
+-->
+<template>
+  <section id="treeSty">
+      <el-tree
+        v-show="isTree"
+        v-loading="loading2"
+        element-loading-text="拼命加载中"
+        element-loading-spinner="el-icon-loading"
+        element-loading-background="rgba(0, 0, 0, 0)"
+        ref="vehtree"
+        id="trees"
+        node-key="cid"
+        :props="props"
+        :load="loadNode"
+        accordion
+        :auto-expand-parent="autoExpandParent"
+        lazy
+        show-checkbox
+        check-strictly
+        :renderContent = "renderContent"
+        @check-change  = "handleCheck"
+        @node-expand   = "handleNodeClick"
+        @node-click    = "nodeClick"
+        @node-collapse = "collapseNode"
+       >
+      </el-tree>
+      <el-tree
+        v-show="!isTree"
+        :data="searchData"
+        ref="searchVehtree"
+        node-key="cid"
+        id="searchTree"
+        :props="defaultProps"
+        default-expand-all
+        accordion
+        show-checkbox
+        check-strictly
+        :renderContent = "searchRenderContent"
+        @check-change  = "handleCheck"
+        @node-expand   = "handleNodeClick"
+        @node-click    = "nodeClick"
+        @node-collapse = "collapseNode">
+      </el-tree>
+  </section>
+</template>
+
+<script>
+import Vue from "vue";
+import "static/script/jquery.nicescroll";
+import {
+  getList,
+  getChildrenTag,
+  getChildrenCar,
+  getvehiclesstatus,
+  proddetail,
+  vehiclesCount
+} from "@/Api/mapApi.js";
+
+export default {
+  name: "tree",
+  computed: {
+    //默认选中keys列表
+    defaultCheckedKeysList() {
+      return this.$store.state.defaultCheckedKeysList;
+    },
+    GroupStatistics() {
+      return this.$store.getters.GroupStatistics;
+    },
+    //最新 查询的树关键字
+    searchVal() {
+      return this.$store.getters.searchVal;
+    }
+  },
+  watch: {
+    //实时监听树节点值的变化查询的树关键字
+    searchVal(newval) {
+      this.isTree = !newval.sval;
+      if (!this.isTree) {
+        this.filterVehTree(newval);
+      }
+    }
+  },
+  data() {
+    return {
+      searchData: [],
+      isTree: true,
+      autoExpandParent: false,
+      defaultProps: {
+        children: "children",
+        label: "label"
+      },
+      curSearchType: "",
+      curSearchDeviceInfo: null,
+      st: null,
+      currEl: null,
+      /*树形数据*/
+      loading2: true,
+      props: {
+        label: "label",
+        children: "name",
+        isLeaf: "leaf"
+      },
+      tIndex: 0
+      /*end*/
+    };
+  },
+  methods: {
+    //筛选车辆树
+    filterVehTree(sinfo) {
+      let _self = this;
+      this.curSearchType = sinfo.type;
+      if (sinfo.type == "device") {
+        //设备查询
+        let para = {
+          id: sinfo.sval
+        };
+        if (this.st != null) clearTimeout(this.st);
+        this.searchData = [];
+        this.st = setTimeout(function() {
+          proddetail(para).then(function(res) {
+            if (res.data.result.code == 0) {
+              let devinfo = (_self.curSearchDeviceInfo = res.data.data);
+              if (
+                devinfo.basicdata == null ||
+                devinfo.basicdata.vehicleid == null
+              )
+                return;
+              _self.$indexedDB.getDataById(
+                "company",
+                devinfo.basicdata.corpid,
+                function(corpres) {
+                  let cp = corpres.data;
+                  _self.$indexedDB.getDataById(
+                    "cveh" + cp.corpid,
+                    parseInt(devinfo.basicdata.vehicleid),
+                    function(res) {
+                      _self.searchDatabuffer([res.data], cp);
+                    }
+                  );
+                }
+              );
+            }
+          });
+        });
+      } else {
+        if (this.st != null) clearTimeout(this.st);
+        this.searchData = [];
+        this.st = setTimeout(function() {
+          _self.$indexedDB.getDataAll("company", function(res) {
+            if (res.data.length > 0) {
+              res.data.forEach(function(cp) {
+                _self.$indexedDB.getDataBySearchLike(
+                  "cveh" + cp.corpid,
+                  sinfo.type,
+                  sinfo.sval,
+                  function(res) {
+                    _self.searchDatabuffer(res.data, cp);
+                  }
+                );
+              });
+            } else {
+            }
+          });
+        }, 50);
+      }
+    },
+    //递归 拼接 标签组
+    tagBuffer(item, tag) {
+      let index = item.tagnamepath.split("|").length;
+      this.tIndex++;
+      let name = item.tagnamepath.split("|")[this.tIndex];
+      tag.label = name;
+      if (this.tIndex == index - 1) {
+        this.tIndex = 0;
+        tag.children.push(item);
+        return;
+      }
+      tag.children.push({ label: "", disabled: true, children: [] });
+      this.tagBuffer(item, tag.children[0]);
+    },
+    //前端查询 返回的查询数据模型构建
+    searchDatabuffer(sdata, cp) {
+      if (sdata == undefined) return;
+      if (sdata.length > 0) {
+        let tsdata = [];
+        let vehicleids = [];
+        sdata.forEach((item, index) => {
+          if (item.tagid != null) {
+            let tag = {
+              children: [],
+              disabled: true,
+              label: ""
+            };
+            this.tagBuffer(item, tag);
+            item = tag;
+          }
+          tsdata.push(item);
+          vehicleids.push(item.vehicleid);
+        });
+        cp.children = tsdata;
+        cp.stotal = sdata.length;
+        this.searchData.push(cp);
+        let monitorData = this.$store.getters.monitorData;
+        for (var i = 0, len = monitorData.length; i < len; i++) {
+          monitorData[i].devices.forEach((item, index) => {
+            this.$refs.searchVehtree.remove(
+              "d" + item.prodnum + data.vehicleid
+            );
+          });
+        }
+
+        if (this.curSearchType == "device") this.addDeviceVeh(vehicleids);
+
+        this.setSearchVehStatus(vehicleids.join(",")); // 设置查询树状态
+
+        //默认选中查询树
+        // this.$nextTick(function(){
+        //   sdata.forEach((item,index)=>{
+        //     this.defaultCheckedKeysList.forEach((ch,index)=>{
+        //       if(item.vehicleid == ch){
+        //         this.$refs.searchVehtree.setChecked('v'+ch,true)
+        //       }
+        //     });
+        //   });
+        // })
+      }
+    },
+    //查询对应设备到指定车下面显示
+    addDeviceVeh(vehId) {
+      let pitem = this.curSearchDeviceInfo.proddata;
+      if (pitem == null) return;
+      if (pitem.prodnum == null) return;
+      //添加车辆设备 信息
+      pitem.label =
+        pitem.prodspec + "/" + pitem.prodmodel + "/" + pitem.prodnum;
+      pitem.leaf = true;
+      pitem.disabled = true;
+      pitem.type = 1;
+      pitem.cid = "d" + pitem.prodnum + "" + vehId;
+      this.$nextTick(function() {
+        this.$refs.searchVehtree.insertAfter(pitem, "v" + vehId);
+      });
+    },
+    //默认加载对应车辆实时状态
+    setSearchVehStatus(vehicleids) {
+      let _self = this;
+      getvehiclesstatus({ vehicleids: vehicleids }).then(res => {
+        if (res.data.result.code == 0) {
+          res.data.data.forEach(function(item, index) {
+            let node = _self.$refs.searchVehtree.getNode("v" + item.vehicleid);
+            let icontClass = _self.getVehIconfont(node.data.vehicletype);
+            if ((item.istate != 1 && item.istate > 0) || item.istate == 0) {
+              //在线状态层级为汽车
+              $("#vs" + item.vehicleid)
+                .removeClass("el-icon-loading")
+                .addClass("iconfont " + icontClass + " color067816");
+            } else {
+              $("#vs" + item.vehicleid)
+                .removeClass("el-icon-loading")
+                .addClass("iconfont " + icontClass + " color848484");
+            }
+          });
+        }
+      });
+    },
+    //节点点击
+    nodeClick(data, node, target) {
+      //如果type 等于 1 显示设备详情
+      if (data.type == 1) {
+        let para = {
+          id: data.prodnum
+        };
+        let _self = this;
+        let cst = this.curSearchDeviceInfo;
+        if (
+          this.curSearchType == "device" &&
+          cst &&
+          cst.proddata &&
+          cst.basicdata.vehicleid != null
+        ) {
+          cst.proddata = [cst.proddata];
+          _self.$store.commit("listOrDeails", { states: true, index: 0 });
+          _self.$store.commit("monitorDataDetails", {
+            map: _self.$map,
+            result: cst
+          });
+        } else {
+          proddetail(para).then(function(res) {
+            if (res.data.result.code == 0) {
+              let vdetail = res.data.data;
+              vdetail.proddata = [vdetail.proddata];
+              _self.$store.commit("listOrDeails", { states: true, index: 0 });
+              _self.$store.commit("monitorDataDetails", {
+                map: _self.$map,
+                result: vdetail
+              });
+            }
+          });
+        }
+      } else {
+        //如果当前节点别选择 并且是一个车
+        if (node.checked && data.vehicleid) {
+          this.$store.dispatch("zoomToCarByCarId", {
+            carId: data.vehicleid,
+            _this: this
+          });
+        }
+      }
+    },
+    //勾选的时候操作
+    handleCheck(data, ischeck, cischeck) {
+      data.checkType = 0;
+      let monitorData = this.$store.getters.monitorData;
+      for (var i = 0, len = monitorData.length; i < len; i++) {
+        monitorData[i].devices.forEach((item, index) => {
+          this.$searchVehtree.remove("d" + item.prodnum + data.vehicleid);
+        });
+      }
+      this.$emit("handleCheck", {
+        data: data,
+        ischeck: ischeck,
+        cischeck: cischeck
+      });
+      // this.$store.commit('setCurVehInfo',data);
+    },
+    //节点被展开时候操作 加载子节点
+    handleNodeClick(data, node, t) {
+      $("div.treepage").hide();
+      let tp = $(t.$el).find("div.treepage");
+      if (tp.length > 0) {
+        tp.show();
+      } else {
+        this.currEl = $(t.$el);
+      }
+    },
+    //节点被折叠时候操作 加载子节点
+    collapseNode(data, node, t) {
+      let tp = $(t.$el).find("div.treepage");
+      if (tp.length > 0) {
+        tp.hide();
+      }
+    },
+    //加载树节点
+    loadNode(node, resolve) {
+      let _self = this;
+      if (node.level == 0) {
+        //加载树形列表
+        // let params = {id: this.$store.getters.user.userid};
+        //如果公司本地数据库 存在公司列表立即 去除显示
+        this.$indexedDB.getDataAll("company", function(res) {
+          if (res.data.length > 0) {
+            _self.loading2 = false;
+
+            return resolve(res.data);
+          } else {
+            resolve([]);
+          }
+          // if(_self.searchVal == ''){ //当用户搜索不请求后台接口
+          //   //后台请求数据库 查询公司列表
+          //   getList(params).then(function (response) {
+          //     let results = response.data,tempCop = [];
+          //     if (results.result.code == 0 && results.data.length > 0) {
+          //       _self.loading2 = false;
+          //       //加载一级树
+          //       results.data.forEach(function(item,index){
+          //         item.disabled = true;
+          //         item.cid = "c"+item.corpid;//添加公司分组唯一标识
+          //         item.label = item.corpname;
+          //         _self.$indexedDB.putData("company",item,function(res){});   //更新前端数据库
+          //         if(res.data.length < index+1){ //如果最新公司 大于 前端数据库缓存的 立即新增到节点
+          //           tempCop.push(item);
+          //         }
+          //       });
+          //       resolve(tempCop);
+          //       /*先获取报警类型*/
+          //         policeType().then(function (response) {
+          //           let results = response.data;
+          //           if (results.result.code == 0) {
+          //             sessionStorage.setItem('policeTypeCode',JSON.stringify(results.data))
+          //           }
+          //         }).catch(function (error) {
+          //         });
+          //       /**车辆报警列表信息订阅 start**/
+          //         _self.$mqtt.subscribePoliceInfo(_self.$store.getters.user.userid);
+          //       /**end**/
+          //     } else {
+          //       _self.loading2 = false;
+          //     }
+          //   }).catch(function (error) {
+          //     _self.loading2 = false;
+          //   })
+          // }
+        });
+      } else {
+        if (node.data.isCar) return resolve([]); //如果层级位车辆就不加载了
+        let tagid;
+        if (node.level == 1) {
+          tagid = "-1";
+        } else {
+          tagid = node.data.tagid;
+        }
+        /*加载二级树*/
+        // let params1 = {
+        //   userid: this.$store.getters.user.userid,
+        //   corpid: node.data.corpid,
+        //   tagid: tagid,
+        // };
+        // let params2 = {
+        //   userid: this.$store.getters.user.userid,
+        //   corpid: node.data.corpid,
+        //   tagid: tagid,
+        //   pagenum: 0,
+        //   pagesize: 100
+        // };
+        //如果公司本地数据库 存在公司列表立即 去除显示
+        this.$indexedDB.getDataBySearchTagID(
+          "tag",
+          tagid,
+          "corpid",
+          node.data.corpid,
+          function(res) {
+            let childrenArrObj1 = [],
+              childrenArrObj2 = [];
+            if (res.data.length > 0) {
+              childrenArrObj1 = res.data;
+            }
+            _self.$indexedDB.getCorpDataAll(
+              "cveh" + node.data.corpid,
+              tagid,
+              function(res) {
+                if (res.data.length > 0) {
+                  childrenArrObj2 = res.data;
+
+                  if (childrenArrObj2.length == 100 && _self.searchVal == "") {
+                    let treepage = document.createElement("div");
+                    treepage.className = "treepage";
+                    treepage.onclick = _self.nextTreePageHandle;
+                    treepage.innerHTML =
+                      "<i class='iconfont icon-web_xiangxiazhankai'></i> 查看更多";
+                    setTimeout(() => {
+                      _self.currEl.append(treepage);
+                    }, 50);
+                  }
+                }
+                if (
+                  childrenArrObj1.length != 0 ||
+                  childrenArrObj2.length != 0
+                ) {
+                  resolve(childrenArrObj1.concat(childrenArrObj2)); //合并展示
+                } else {
+                  resolve([]);
+                }
+
+                _self.defaultSelVehtree(childrenArrObj2); // 默认选中树
+
+                _self.setVehStatus(childrenArrObj1, childrenArrObj2, resolve); // 设置对应车辆状态
+                // if(_self.searchVal == ''){
+                /*获取标签*/
+                // getChildrenTag(params1).then( (response) => {
+                // let results = response.data,tmpTagList = [],tmpVehList = [];
+                // if (results.result.code == 0) {
+                //   results.data.forEach(function(item,index){
+                //     item.disabled = true;
+                //     item.cid = "t"+item.tagid;//添加标签唯一标识
+                //     item.label = item.tagname;//显示label
+                //     _self.$indexedDB.putData("tag",item,function(res){});
+                //     if(childrenArrObj1.length < index+1){
+                //       tmpTagList.push(item);
+                //     }
+                //   });
+                /*获取车辆信息*/
+                // getChildrenCar(params2).then( (response) => {
+                //   let results = response.data;
+                //   if (results.result.code == 0) {
+                //     results.data.forEach(function(item,index){
+                //       item.isCar = true;
+                //       item.leaf = true;
+                //       //添加车唯一标识
+                //       item.cid = "v"+item.vehicleid;
+                //       item.label = '';
+                //       item.label += item.name || '';
+                //       if(item.name && item.ownername) item.label += '/';
+                //       item.label += item.ownername || '';
+                //       _self.$indexedDB.putData("vehicle",item,function(res){});
+                //       if(childrenArrObj2.length < index+1){
+                //         tmpVehList.push(item);
+                //       }
+                //     });
+                //     if(tmpVehList.length == 100 && childrenArrObj2.length < 100){
+                //       let treepage = document.createElement("div");
+                //       treepage.className = 'treepage';
+                //       treepage.onclick = _self.nextTreePageHandle
+                //       treepage.innerHTML = "<i class='iconfont icon-web_xiangxiazhankai'></i> 查看更多";
+                //       setTimeout(()=>{
+                //         _self.currEl.append(treepage);
+                //       },50);
+                //     }
+                //     if(childrenArrObj2.length == 0)
+                //     resolve(tmpTagList.concat(tmpVehList));//合并展示
+                //   }
+                // }).catch(function (error) {
+                //    console.log(error);
+                // })
+                /*end*/
+                //       }
+                //     }).catch(function (error) {
+                //       console.log(error);
+                //     });
+                //     /*end*/
+                //     }
+              }
+            );
+          }
+        );
+      }
+    },
+    //默认加载对应车辆实时状态
+    setVehStatus(taglist, vehlist, resolve) {
+      let _self = this;
+      let tmpvehlist = vehlist;
+      let tmptaglist = taglist;
+      let vehids = vehlist
+        .map(function(item) {
+          return item.vehicleid;
+        })
+        .join(",");
+      getvehiclesstatus({ vehicleids: vehids }).then(res => {
+        if (res.data.result.code == 0) {
+          let vehlist1 = res.data.data.map(function(item, index) {
+            tmpvehlist[index].istate = item.istate;
+            return vehlist[index];
+          });
+          resolve(tmptaglist.concat(vehlist1));
+        }
+      });
+    },
+    //默认选中树
+    defaultSelVehtree(childrenArrObj) {
+      let _self = this;
+      this.$nextTick(function() {
+        childrenArrObj.forEach((item, index) => {
+          _self.defaultCheckedKeysList.forEach((ch, index) => {
+            if (item.vehicleid == ch) {
+              _self.$refs.vehtree.setChecked("v" + ch, true);
+            }
+          });
+        });
+      });
+    },
+    //获取当前分组 或者标签组 更多的车辆
+    nextTreePageHandle(e) {
+      e.stopPropagation();
+      let node = $(e.target)
+        .prevAll("div.el-tree-node__content")
+        .find("span.custom-tree-node");
+      let json = JSON.parse(node.attr("jspn"));
+      let params2 = {
+        userid: this.$store.getters.user.userid,
+        corpid: json.corpid,
+        tagid: node.attr("tagid"),
+        pagesize: 100
+      };
+      //获取当前页码
+      let p = parseInt(node.attr("pagenum"));
+      params2.pagenum = ++p;
+      const loading = this.$loading({
+        lock: true,
+        text: "",
+        spinner: "el-icon-loading",
+        background: "rgba(0, 0, 0, 0.5)",
+        target: e.target
+      });
+      /*获取车辆信息*/
+      getChildrenCar(params2)
+        .then(response => {
+          let results = response.data;
+          loading.close();
+          if (results.result.code == 0) {
+            node.attr("pagenum", params2.pagenum); //更新最新页码
+            let corp = {
+              corpid: params2.corpid,
+              corpname: node.attr("corpname"),
+              disabled: true
+            };
+            results.data.forEach((item, index) => {
+              item.isCar = true;
+              item.leaf = true;
+              item.label = "";
+              item.label += item.name || "";
+              if (item.name && item.ownername) item.label += "/";
+              item.label += item.ownername || "";
+              if (params2.tagid != -1) {
+                this.$refs.vehtree.append(item, json.tid);
+                return;
+              }
+              this.$refs.vehtree.append(item, json.cid);
+            });
+            if (results.data.length < 100) {
+              $(e.target).remove();
+              this.$message({
+                message: "没有更多数据了哦！",
+                type: "success"
+              });
+            }
+          }
+        })
+        .catch(function(error) {
+          console.log(error);
+          loading.close();
+        });
+      /*end*/
+    },
+    //获取对应车辆类型 的iconfont图标
+    getVehIconfont(vehicletype) {
+      let icontClass = "";
+      switch (vehicletype) {
+        case 2:
+          icontClass = "icon-chuzuche";
+          break;
+        case 3:
+          icontClass = "icon-dkw_qiche";
+          break;
+        case 4:
+          icontClass = "icon-daxingkeche";
+          break;
+        case 5:
+          icontClass = "icon-zhongxingkeche";
+          break;
+        case 6:
+          icontClass = "icon-tubiao-keche";
+          break;
+        case 8:
+          icontClass = "icon-daxinghuoche";
+          break;
+        case 9:
+          icontClass = "icon-daxinghuoche1";
+          break;
+        case 10:
+          icontClass = "icon-xiaoxinghuoche-copy";
+          break;
+        case 13:
+          icontClass = "icon-jiaobanche";
+          break;
+        case 14:
+          icontClass = "icon-gongchengjixie";
+          break;
+        case 21:
+          icontClass = "icon-zhuangxieshebei";
+          break;
+        case 29:
+          icontClass = "icon-131231221";
+          break;
+        case 30:
+          icontClass = "icon-jiuyuancheliang";
+          break;
+        case 33:
+          icontClass = "icon-che5";
+          break;
+        default:
+          icontClass = "icon-che";
+          break;
+      }
+      return icontClass;
+    },
+    //渲染树内容
+    renderContent(h, { node, data, store }) {
+      var oneGroupStatistics = this.GroupStatistics.filter(function(item) {
+        if (!data.tagid) return item.corpid === data.corpid;
+      });
+      //如果存在对应分组车辆数量信息就添加
+      if (oneGroupStatistics.length > 0) {
+        data.vehicleonlinetotal = oneGroupStatistics[0].vehicleonlinetotal;
+        data.vehicletotal = oneGroupStatistics[0].vehicletotal;
+      }
+      if (
+        (data.isCar && data.istate != 1 && data.istate > 0) ||
+        data.istate == 0
+      ) {
+        //在线状态层级为汽车
+        let icontClass = this.getVehIconfont(data.vehicletype);
+        return (
+          <span class="custom-veh-tree-node">
+            <span>
+              <i class={"iconfont " + icontClass + " color067816"} />{" "}
+              {data.label}{" "}
+            </span>
+          </span>
+        ); //////
+      }
+      //如果类型type == 1 显示设备
+      if (data.type == 1) {
+        return (
+          <span class="custom-veh-tree-node">
+            <span class="tdevice"> {data.label} </span>
+          </span>
+        ); //////
+      }
+      if (data.isCar && data.istate == undefined) {
+        //如果车辆状态没有  当前车子为离线状态
+        return (
+          <span class="custom-veh-tree-node">
+            <span>
+              <i class="el-icon-loading" /> {data.label}{" "}
+            </span>
+          </span>
+        ); //////
+      }
+      if (data.isCar && data.istate == 1) {
+        //离线状态层级为汽车
+        let icontClass = this.getVehIconfont(data.vehicletype);
+        return (
+          <span class="custom-veh-tree-node">
+            <span>
+              <i class={"iconfont " + icontClass + " color848484"} />{" "}
+              {data.label}{" "}
+            </span>
+          </span>
+        ); //////
+      }
+      if (!data.isCar) {
+        //该层级为公司
+        if (!data.tagid) {
+          return (
+            <span
+              class="custom-tree-node"
+              jspn={JSON.stringify(data)}
+              tagid="-1"
+              pagenum="0"
+            >
+              <span>
+                {data.label}(<span class="color067816">
+                  {data.vehicleonlinetotal | 0}
+                </span>/{data.vehicletotal | 0})
+              </span>
+            </span>
+          );
+        } else {
+          return (
+            <span
+              class="custom-tree-node"
+              jspn={JSON.stringify(data)}
+              tagid={data.tagid}
+              pagenum="0"
+            >
+              <span>{data.label}</span>
+            </span>
+          );
+        }
+      }
+    },
+    //渲染树内容
+    searchRenderContent(h, { node, data, store }) {
+      if (
+        (data.isCar && data.istate != 1 && data.istate > 0) ||
+        data.istate == 0
+      ) {
+        //在线状态层级为汽车
+        let icontClass = this.getVehIconfont(data.vehicletype);
+        return (
+          <span class="custom-veh-tree-node">
+            <span>
+              <i class={"iconfont " + icontClass + " color067816"} />{" "}
+              {data.label}{" "}
+            </span>
+          </span>
+        ); //////
+      }
+      if (data.type == 1) {
+        return (
+          <span class="custom-veh-tree-node">
+            <span class="tdevice"> {data.label} </span>
+          </span>
+        ); //////
+      }
+      if (data.isCar && data.istate == undefined) {
+        //如果车辆状态没有  当前车子为离线状态
+        return (
+          <span class="custom-veh-tree-node">
+            <span>
+              <i class="el-icon-loading" id={"vs" + data.vehicleid} />{" "}
+              {data.label}{" "}
+            </span>
+          </span>
+        ); //////
+      }
+      if (data.isCar && data.istate == 1) {
+        //离线状态层级为汽车
+        let icontClass = this.getVehIconfont(data.vehicletype);
+        return (
+          <span class="custom-veh-tree-node">
+            <span>
+              <i class={"iconfont " + icontClass + " color848484"} />{" "}
+              {data.label}{" "}
+            </span>
+          </span>
+        ); //////
+      }
+      if (!data.isCar) {
+        //该层级为公司
+        if (!data.tagid) {
+          return (
+            <span
+              class="custom-tree-node"
+              jspn={JSON.stringify(data)}
+              tagid="-1"
+              pagenum="0"
+            >
+              <span>
+                {data.label}(<span class="color067816">{data.stotal}</span>)
+              </span>
+            </span>
+          );
+        } else {
+          return (
+            <span
+              class="custom-tree-node"
+              jspn={JSON.stringify(data)}
+              tagid={data.tagid}
+              pagenum="0"
+            >
+              <span>{data.label}</span>
+            </span>
+          );
+        }
+      }
+    },
+    //设置树节点右键事件
+    setTreeRightContext() {
+      let _this = this;
+      this.$context.attach("span.custom-veh-tree-node", [
+        { header: "车辆功能菜单" },
+        {
+          text: "关注",
+          action: function(e) {
+            console.log("e", e);
+          }
+        },
+        { text: "备注", href: "#" },
+        // {divider: true},
+        { text: "电子围栏", href: "#" },
+        { text: "动车提醒", href: "#" }
+      ]);
+    },
+    // 设置树双击事件
+    showDetails() {
+        var obj = $('#trees').find('.is-current');
+         obj.dblclick(function(e){
+            console.log("双击");
+            //双击时打开列表详情
+            // let vehicleid = this.monitorData[0].vehicleid;
+            // var _this = this;
+            // this.$store.commit("listOrDeails", { states: true, index: 0 }); //跳转到详情
+            // this.$indexedDB.getDataById(
+            //     "vehicleDetail",
+            //     parseInt(vehicleid),
+            //     function(result) {
+            //     let res = result.data;
+            //     if (res) {
+            //         _this.$store.commit("monitorDataDetails", {
+            //         map: _this.$map,
+            //         result: res
+            //         });
+            //     }
+            //     }
+            // );
+          })
+    },
+    // 获取所有车辆基础数据数量
+    getVehiclesCount() {
+      vehiclesCount({ userid: localStorage.getItem("uid") }).then(function(
+        res
+      ) {
+        console.log(res.data.data, "------------------------------------");
+      });
+    }
+  },
+  created() {
+   this.$nextTick(function(){
+        this.showDetails();
+      })
+  },
+  mounted() {
+    $("#trees,#searchTree").niceScroll({
+      autohidemode: "hidden" // 隐藏滚动条的方式, 可用的值:
+      //   true, // 无滚动时隐藏
+      // "cursor" | // 隐藏
+      // false | // 不隐藏,
+      // "leave" | // 仅在指针离开内容时隐藏
+      // "hidden" | // 一直隐藏
+      // "scroll", // 仅在滚动时显示
+    });
+    //设置树节点
+    this.setTreeRightContext();
+    this.getVehiclesCount();
+    //申明树实例
+    Vue.prototype.$tree = this.$refs.vehtree;
+    Vue.prototype.$searchVehtree = this.$refs.searchVehtree;
+  }
+};
+</script>

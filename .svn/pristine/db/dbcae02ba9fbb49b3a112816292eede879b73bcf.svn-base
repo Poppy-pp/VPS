@@ -1,0 +1,69 @@
+<template>
+  <section id="login">
+    <div class="wrap">
+      <div class="wpn">
+          <div class="form-data pos">
+              <a href="#"><img src="static/login/img/logo.png" class="head-logo"></a>
+              <div class="form1">
+                  <p class="p-input pos">
+                      <input type="text" v-model="loginForm.username" placeholder="用户名"/>
+                  </p>
+                  <p class="p-input pos">
+                      <input type="password"  v-model="loginForm.password" placeholder="请输入密码" @keyup.enter="loginHandle"/>
+                  </p>
+              </div>
+              <el-button class="lang-btn log-btn" type="primary" @click.stop="loginHandle" v-loading="loginLoading">登录</el-button>
+              <p class="right">四川万网鑫成信息科技有限公司 版权所有©2018-2020 技术支持QQ：1550465387</p>
+          </div>
+      </div>
+  </div>
+  </section>
+</template>
+<script>
+import 'static/login/css/login.css';
+import { login } from '@/Api/loginApi.js';
+export default {
+  title: 'VPS登录',
+  data () {
+    return {
+      loginForm: {
+        username: '',
+        password: ''
+      },
+      loginLoading: false
+    };
+  },
+  methods: {
+    // 用户登录
+    loginHandle () {
+      let para = {
+        condition:
+          $.trim(this.loginForm.username) + '|' + this.loginForm.password
+      };
+      if (this.loginLoading) return;
+      this.loginLoading = true;
+      login(para).then(res => {
+        let type = '';
+
+
+        let desc = '';
+        this.loginLoading = false;
+        if (res.data.result.code == 0) {
+          type = 'success';
+          desc = '登录成功！';
+          localStorage.setItem('uid', res.data.data);
+          this.$router.replace('/mph');
+        } else {
+          type = 'error';
+          desc = res.data.data;
+        }
+        this.$message({
+          message: desc,
+          type: type,
+          center: true
+        });
+      });
+    }
+  }
+};
+</script>

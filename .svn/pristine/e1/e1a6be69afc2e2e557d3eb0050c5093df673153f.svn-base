@@ -1,0 +1,680 @@
+<!--*
+* @description: 地图首页
+* @author: wp
+* @update: 2018-04-12
+-->
+<template>
+  <section class="vpsLayer" @click="overallClick" v-if="goHome">
+    <loading></loading>
+    <!-- 地图 -->
+    <div :is="mapComponent" :mapid="mapid" ref="rmap"></div>
+
+    <!-- 左侧搜索框 -->
+    <seachs @openTree="openTreeFn"></seachs>
+
+    <!-- 左侧树状结构 -->
+    <tool-box :treeStateProps="treeState">
+      <tree slot="ls1" @handleCheck="openCarInfo"></tree>
+      <ElectronicFence slot="ls2"></ElectronicFence>
+      <followCar slot="ls3" @handleCheck="openCarInfo"></followCar>
+    </tool-box>
+    
+    <!-- 右上方地址工具栏 -->
+    <signTool></signTool>
+
+    <!-- 右上方vps工具栏 -->
+    <setTool ref="setTool" @mapThemeRefresh="mapThemeRefresh"></setTool>
+    
+    <!-- 监控列表 -->
+    <transition name="bounce">
+      <tabsBox ref="tabbox" :treeStateProps="treeState">
+        <monitorList ref="monitorList" @createMarkerCar="createMarkerCar" slot="t0"></monitorList>
+        <police ref="police" slot="t1"></police>
+        <abnormal ref="abnormal" slot="t2"></abnormal>
+      </tabsBox>
+    </transition>
+
+    <!--地图车辆弹框 -->
+    <div :is="frameCompts" :frameProp="frameDatas"></div>
+
+    <windbox v-for="(item,index) in hisWindowData" v-bind:key="index" class="hisbounce-enter-active" :title="item.name" :id="'his'+item.vehicleid">
+      <!-- 历史轨迹 start-->
+      <trajectoryFrame :vehicleid="item.vehicleid" v-if="item.isHidden && !item.windowType"></trajectoryFrame>
+      <!-- 历史轨迹 end-->
+
+      <!-- 图表详情 start-->
+      <behavier v-else-if="item.isHidden && item.windowType === 'chart'" :cls="'his'+item.vehicleid"></behavier>
+      <!-- 图表详情 end-->
+
+      <!-- 图表详情 start-->
+      <lsPolice v-else-if="item.isHidden && item.windowType === 'lsPolice'" :cls="'his'+item.vehicleid"></lsPolice>
+      <!-- 图表详情 end-->
+    </windbox>
+
+    <floatBox v-show="hisWindowData.length > 0"></floatBox>
+
+    <!--end-->
+    <!-- <el-radio-group class="tabMap" @change="tabMap" v-model="maptype" size="medium">
+      <el-radio-button label="0" >高德</el-radio-button>
+      <el-radio-button label="1">百度</el-radio-button>
+    </el-radio-group> -->
+  </section>
+</template>
+
+<script>
+  import windbox from '@/components/mapTool/windBox.vue'// 窗口
+  import floatBox from '@/components/mapTool/floatBox.vue'// 窗口
+
+  import toolBox from '@/components/mapTool/toolBox.vue'// 左侧集合板块
+  import ElectronicFence from '@/components/mapTool/ElectronicFence.vue'//左侧电子围栏
+  import tree from '@/components/mapTool/tree.vue'//左侧树
+  import followCar from '@/components/mapTool/followCar.vue' //左侧关注信息
+
+  import tabsBox from '@/components/table/tabsBox'//数据展示 模板框
+  import monitorList from '@/components/table/monitorList'//监控列表
+  import abnormal from '@/components/table/abnormal'//车辆异常
+  import police from '@/components/table/police'//车辆报警
+
+  import utils from '@/utils/tool.js'//车辆信息
+  import setTool from '@/components/mapTool/setTool'//右侧工具栏
+  // import trajectoryFrame from '@/components/mapTool/trajectoryFrame.vue'// 历史轨迹
+  import amap from '@/components/Map/amap'//高德地图
+
+  import fortificationBox from '@/components/MessageBox/fortificationFrame.vue'// 设防弹框
+  import enclosureBox from '@/components/MessageBox/enclosureFrame.vue'// 电子围栏弹框
+  import instructionsBox from '@/components/MessageBox/instructionsFrame.vue'// 指令弹框
+  import followFrameBox from '@/components/MessageBox/followFrame.vue'// 关注弹框
+
+  import behavier from '@/components/Behavier/home/behavier.vue'// 关注弹框
+  import lsPolice from '@/components/table/carDetails/lsPolice.vue'// 历史报警信息
+
+  import sDLoading from '@/components/loading/c3DLoading.vue' //全局加载
+  import { getvehiclessimple,getYdsfInfo,getInstructions,getFollow,getList,getAlreadyFollow,getalltags,policeType } from '@/Api/mapApi.js'
+  export default {
+    components: {
+      'loading':sDLoading,
+      seachs: resolve => {
+        require(['@/components/mapTool/seach.vue'], resolve)
+      },//搜索框组件
+      toolBox,
+      windbox,
+      floatBox,
+      trajectoryFrame: resolve => {
+        require(['@/components/mapTool/trajectoryFrame.vue'], resolve)
+      },
+      signTool: resolve => {
+        require(['@/components/mapTool/signTool'], resolve)
+      }, //右上角工具栏
+      setTool,
+      ElectronicFence,
+      tree,
+      tabsBox,
+      monitorList,
+      abnormal,
+      police,
+      fortificationBox,
+      enclosureBox,
+      instructionsBox,
+      followFrameBox,
+      behavier,
+      followCar,
+      lsPolice,
+      amap: resolve => {
+        require(['@/components/Map/amap'], resolve)
+      },
+      // bmap: resolve => {
+      //   require(['@/components/Map/bmap'], resolve)
+      // },
+    },
+    computed: {
+      //初始化地图类型
+      maptype() {
+        return this.$store.getters.MAPTYPE;
+      },
+      //地图类型
+      mapComponent() {
+        return this.maptype == 0 ? 'amap' : 'bmap'; //amap为高德地图，bmap为百度地图
+      },
+      //历史窗体列表
+      hisWindowData(){
+        return this.$store.getters.hisZoom.info;
+      },
+      //弹框类型
+      frameCompts() {
+        let _this = this;
+        let frameBoxObj = _this.$store.getters.frameBoxAll;
+        for (let obj in frameBoxObj) {
+          if (frameBoxObj[obj]) {
+            switch (obj) {
+              //设防弹框打开，赋予相应的值
+              case 'fortificationBox': {
+                let mapObj=_this.$store.getters.mapObj;                          //获取地图对象
+                let ydsfInfo= _this.$store.getters.moveCarInfo;                   //获取状态树 原地设防数据
+                _this.$indexedDB.getDataById('vehicleDetail',ydsfInfo.vehicleid,function(result){
+                  let res = result.data;
+                  if(res){
+                    _this.fortificationBox.carno=res.basicdata.carno;
+                    _this.fortificationBox.carOwner=res.basicdata.ownername;
+                  }
+                });
+                _this.frameDatas = _this.fortificationBox;
+                let MGeocoder;
+                //查询当前车辆是否设置了原地设防
+                let showsfInfo={};                                               //获取设防信息
+                let params= {};                                                  //获取设防信息传值
+                params.id = ydsfInfo.vehicleid;
+                params.userid = _this.$store.getters.user  .userid;
+                getYdsfInfo(params)
+                  .then(function (response) {
+                    let info=response.data;
+                    if(info.result.code==0){
+                      /*高德地图解析经纬度 为地址*/
+                      let MGeocoder;
+                      let lnglatXY = new AMap.LngLat(ydsfInfo.lng,ydsfInfo.lat);
+                      //加载地理编码插件
+                      mapObj.plugin(["AMap.Geocoder"], function() {
+                        MGeocoder = new AMap.Geocoder({
+                          radius: 1000,
+                          extensions: "all"
+                        });
+                        //返回地理编码结果
+                        AMap.event.addListener(MGeocoder, "complete", function (data) {
+                          if (info.data) {                                                                        //如果此车已经设防，显示设防信息
+                            let lg=info.data.LngLat.split(',')[0],lt=info.data.LngLat.split(',')[1];
+                            _this.fortificationBox.sfplace = data.regeocode.formattedAddress;                    //设防位置
+                            _this.fortificationBox.lg=lg;
+                            _this.fortificationBox.lt=lt;
+                            _this.fortificationBox.showDelSf=true;
+                            _this.fortificationBox.distance=info.data.Radius;
+                            /*创建原地设防覆盖物*/
+                            let circle = new AMap.Circle({
+                              center: new AMap.LngLat(ydsfInfo.lng, ydsfInfo.lat),         //圆心位置
+                              offset: new AMap.Pixel(-22.5, -23),                          //偏移
+                              radius: info.data.Radius,                                    //半径
+                              strokeColor: "#F33",                                         //线颜色
+                              strokeOpacity: 1,                                            //线透明度
+                              strokeWeight: 1,                                             //线粗细度
+                              fillColor: "#ee2200",                                        //填充颜色
+                              fillOpacity: 0.35                                            //填充透明度
+                            });
+                            console.log('覆盖物信息',ydsfInfo.lng, ydsfInfo.lat,_this.fortificationBox.distance)
+                            mapObj.add(circle);
+                            mapObj.setFitView();
+                            /*添加覆盖物标识*/
+                            let coverInfo={};
+                            coverInfo.carNoOnly=ydsfInfo.carno;                            //车辆覆盖物标识
+                            coverInfo.circle=circle;
+                            _this.$store.commit('coverUpdate',coverInfo);
+                            /*end*/
+                          }else {
+                            _this.fortificationBox.sfplace = '';                                                //清空设防数据
+                            _this.fortificationBox.lg='';
+                            _this.fortificationBox.lt='';
+                            _this.fortificationBox.showDelSf=false;
+                            _this.fortificationBox.distance=0;
+                          }
+                          _this.fortificationBox.place = data.regeocode.formattedAddress;                       //详细地址
+                        });
+                        //逆地理编码
+                        MGeocoder.getAddress(lnglatXY);
+                      });
+                      _this.fortificationBox.boxTit='原地设防';
+                      _this.fortificationBox.carno=ydsfInfo.carno;
+                      _this.fortificationBox.carOwner=ydsfInfo.ownername;
+
+                    }
+                  }).catch(function (error) {
+                });
+                _this.frameDatas = _this.fortificationBox;
+                break;
+              }
+              //电子围栏弹框打开，赋予相应的值
+              case 'enclosureBox': {
+                _this.frameDatas = _this.arrEnclosure;
+                break;
+              }
+              //指令弹框打开，赋予相应的值
+              case 'instructionsBox': {
+                let ydsfInfo= _this.$store.getters.moveCarInfo;                    //获取状态树 原地设防数据
+                _this.$indexedDB.getDataById('vehicleDetail',+ydsfInfo.vehicleid,function(result){
+                  let res = result.data;
+                  if(res){
+                    let basicdata=res.basicdata,proddata=res.proddata;
+                    let resultObj={};
+                        resultObj.proddata=res.proddata;
+                        resultObj.proddataIndex=0;                                //默认获取第一个设备的所有指令
+                    // _this.$store.commit('instructionsCode',resultObj);
+                    /*获取指令基本信息*/
+                    _this.instructionsBox.boxTit='指令';
+                    _this.instructionsBox.plateNumber=basicdata.carno;
+                    _this.instructionsBox.carOwner=basicdata.ownername;
+                    _this.instructionsBox.phoneCheck=proddata[0].prodnum;
+                    _this.instructionsBox.numberArr=proddata;
+                    _this.instructionsBox.instructionResult='';
+                    /*end*/
+                    let parms={};
+                    parms.id=proddata[0].prodnum;
+                    getInstructions(parms)
+                      .then(function (response) {
+                        let info=response.data;
+                        if(info.result.code==0){
+                          _this.instructionsBox.instructionsArr=info.data;
+                        }
+                      }).catch(function (error) {
+                    });
+                  }else {
+                    /*访问真是后台数据*/
+
+                  }
+                });
+                _this.frameDatas = _this.instructionsBox;
+                break;
+              }
+              //关注弹框打开，赋予相应的值
+              case 'followFrameBox': {
+                let carInfo= _this.$store.getters.moveCarInfo;                    //获取状态树 原地设防数据
+                console.log('获取已经关系的车辆标识ID',carInfo.vehicleid)
+                /*获取所有关注类型赋值*/
+                _this.followBox.boxTit="关注车辆信息";
+                _this.followBox.guamzhuInfo='';
+                getFollow({id:_this.$store.getters.user.userid})
+                  .then(function (response) {
+                    let info=response.data;
+                    if(info.result.code==0){
+                          let allfollowType=info.data;
+                      /*访问已经关注的类型*/
+                      getAlreadyFollow({userid:_this.$store.getters.user.userid,id:carInfo.vehicleid})
+                        .then(function (response) {
+                          let infos=response.data;
+                          if(infos.result.code==0){
+                            let followType=infos.data;
+                            if (followType) {
+                              for(let index=0;index<allfollowType.length;index++){
+                                for(let inde=0;inde<followType.length;inde++){
+                                  if (allfollowType[index].id==followType[inde].pid){
+                                    allfollowType[index].splice(index,1);
+                                    break
+                                  }
+                                }
+                                console.log('筛选后的值',allfollowType)
+                                _this.followBox.guanzhuTypeArr=allfollowType;
+                              }
+                            }else{
+                              _this.followBox.guanzhuTypeArr=info.data;
+                            }
+                          }
+
+                        }).catch(function (error) {
+                          console.log('进入catch')
+                      });
+                      /*end*/
+                    }else {
+                      _this.followBox.guanzhuTypeArr=info.data;
+                    }
+
+                  }).catch(function (error) {
+                });
+                /*end*/
+                _this.frameDatas = _this.followBox;
+                break;
+              }
+            }
+            return obj
+          }
+        }
+      },
+      //代替滚动显示隐藏
+      ThumbnailReplace(){
+        return this.$store.getters.ThumbnailArrReplace;
+      },
+      //代替滚动动画Class
+      addtransitionRight02(){
+        return this.$store.getters.addtransitionRight02;
+      },
+      //报警次数
+      policeDataNum(){
+        return this.$store.getters.policeDataNum;
+      },
+      //异常次数
+      abnormalNum(){
+        return this.$store.getters.abnormalNum;
+      }
+    },
+    data() {
+      return {
+        user:null,
+        pageSize:0,
+        goHome:false,                           //当indexedDb初始化完成在渲染页面
+        mapid: 'mapContainer',
+        treeState: 0,                           //树展开 1 树收缩 0
+        /*弹框传值*/
+        frameDatas: '',
+        /*原地设防弹框传值*/
+        fortificationBox: {
+          boxTit: '',          //tit
+          carno: '',                  //车牌号
+          carOwner: '',              //车主
+          lg: '',                    //设防经度
+          lt: '',                    //设防纬度
+          place: '',                 //位置
+          sfplace:'',                //设防距离
+          distance: 0,               //距离 默认0
+          showDelSf:false
+        },
+        /*end*/
+        /*电子围栏弹框传值*/
+        arrEnclosure: [
+          {
+            name: "锦江区围栏",
+            checked: false,
+            value: 2,
+          }
+        ],
+        /*指令弹框传值*/
+        instructionsBox: {
+          boxTit: '',     //tit
+          plateNumber: '',  //车牌号
+          carOwner: "",  //车主
+          phoneCheck: '', //默认选择的设备获取第一个
+          instructionResult: '',    //筛选后的指令
+          numberArr: [     //设备号数组
+          ],
+          instructionsArr: [     //指令选择数据
+          ]
+        },
+        /*end*/
+        /*关注弹框传值*/
+        followBox: {
+          boxTit: '关注车辆信息',     //tit
+          //关注类型单选框值
+          guanzhuTypeArr: [],
+          guamzhuInfo: '',                         //关注信息
+          // whetherShare: '1'                        //是否分享
+        },
+        /*end*/
+        ThumbnailArr: false,                       //历史轨迹缩略图集合
+        addtransitionRight: false,                 //缩小圆圈向右过渡class
+        currentIndex:'',                           //打开缩小弹框的index
+      }
+    },
+    methods: {
+      //全局点击事件
+      overallClick() {
+      },
+      //地图主题样式刷新
+      mapThemeRefresh(enName) {
+        var element = document.body, className = '';
+        if (enName == 'a68e4ef956562f5634b461b6e0e4a408') {
+          className = "default";
+        } else {
+          className = enName;
+        }
+        if (!element || !className) {
+          return
+        }
+        //如果是卫星图 单独处理
+        if (enName == 'satellite') {
+          this.$store.commit('UPDATE_THEME', 'satellite');
+        } else {
+          element.className = "vps-custom-" + className;
+          this.$store.commit('UPDATE_THEME', className);
+        }
+        this.$refs.rmap.mapThemeRefresh(enName);
+      },
+      //切换地图类型
+      tabMap(t) {
+        if (t == this.$store.getters.MAPTYPE) return;
+        this.$store.commit('UPDATE_MAPTYPE', t);
+        if (t == 0)
+          this.mapComponent = 'amap';
+        else
+          this.mapComponent = 'bmap';
+      },
+      //展开树信息
+      openTreeFn(state) {
+        this.treeState = state;
+      },
+      //展开车辆监控列表信息
+      openCarInfo({data, ischeck, cischeck}) {
+        this.$refs.tabbox.carsInfosHeight = ""; //展开表格详情
+        if (!ischeck) {
+          let monitorData = this.$store.getters.monitorData;
+          this.$map.clearInfoWindow();
+          for (var i = 0, len = monitorData.length; i < len; i++) {
+            if (monitorData[i].vehicleid == data.vehicleid) {
+              /* 测试 删除设备节点 */
+              monitorData[i].devices.forEach((item,index)=>{
+                  this.$tree.remove('d'+item.prodnum+data.vehicleid); 
+              })
+              /* 测试 删除设备节点 */
+              this.$store.commit("delete_monitorData", i);
+              this.$store.dispatch("delete_carMaker", {
+                carId: data.vehicleid,
+                _this: this,
+                index: i
+              });
+              break;
+            }
+          }
+          /*关闭车辆信息弹框*/
+          utils.closeBoxCom(this.$store.getters);
+          /*end*/
+
+          /**取消订阅单个车 start**/
+          this.$mqtt.unsubscribeOneCar(data.vehicleid);
+          /**end**/
+
+        } else {
+          this.$store.dispatch("renderMonitor", {
+            data: data,
+            ischeck: ischeck,
+            cischeck: cischeck,
+            _this: this
+          });
+          /**订阅单个车 start**/
+          this.$mqtt.subscribeOneCar(data.vehicleid);
+          /**end**/
+        }
+      },
+      //创建地图车辆点
+      createMarkerCar(vdata) {
+        this.$refs.rmap.createMarkerCar(vdata)
+      },
+      createdComp(cb){
+        let params = {id: this.$store.getters.user.userid};
+        let _self  = this;
+        getList(params).then(function (response) {
+            let results = response.data;
+            if(results.data == null){
+              _self.$message({
+                message: '数据库异常',
+                type: 'error',
+                center:true
+              });
+              cb(results.data);
+              return;
+            }
+            if (results.result.code == 0 && results.data.length > 0) {
+              cb(results.data);
+            }
+        });
+      },
+      //更新前端车辆数据库
+      updateDbVehData(user){
+        let params = {
+          userid:user.userid,
+          pagesize:10000,
+          index:this.pageSize
+        },
+        _self = this;
+
+        //初始化tag数据
+        _self.$indexedDB.getDataAll("tag",function(res){
+          let ind = 0;
+          if(res.data.length > 0) return;
+          getalltags().then(function(res){
+            let taglist = res.data.data;
+            if(taglist == null) return;
+            _self.$store.commit("update_curLoading",{
+              hidden:true,
+              pval:7,
+              text:'标签数据写入···'
+            });
+            taglist.forEach(function(item,index){
+              item.disabled = true;
+              item.cid = "t"+item.id;//添加标签唯一标识
+              item.tagid = item.idpath.split('|')[item.idpath.split('|').length-1];
+              item.label = item.tagnamepath.split('|')[item.tagnamepath.split('|').length-1];//显示label
+              _self.$indexedDB.putData("tag",item,function(res){});
+              ind++;
+              if(ind+1 == taglist.length){
+                _self.$store.commit("update_curLoading",{
+                  hidden:true,
+                  pval:10,
+                  text:'车辆数据读取···'
+                });
+              }
+            });
+          });
+        });
+
+         //初始化车辆数据tag数据
+        _self.$indexedDB.getDataAll("vehicleTotal",function(res){
+          if(res.data.length > 0 && _self.pageSize == 0) {
+            _self.initPolice();
+            return;
+          }
+          _self.$store.commit("update_curLoading",{
+            hidden:true,
+            pval:5,
+            text:'数据读取中···'
+          });
+          getvehiclessimple(params).then( (results) => {
+            let vehlist = results.data.data,ind = 0;
+            if(vehlist == null) return;
+            _self.$indexedDB.putData("vehicleTotal",{vesion:1,vehlen:vehlist.length},function(res){});
+            vehlist.forEach(function(item,index){
+              item.isCar = true;
+              item.leaf = true;
+              //添加车唯一标识
+              item.cid = "v"+item.vehicleid;
+              item.label = '';
+              item.label += item.name || '';
+              if(item.name && item.ownername) item.label += '/';
+              item.label += item.ownername || '';
+              item.corpid = item.corporateid;
+
+              _self.$indexedDB.putData("cveh"+item.corpid,item,function(res){
+                ind++;
+                _self.$store.commit("update_curLoading",{
+                  hidden:true,
+                  pval:Math.min(100,Math.max(10,Math.round((ind+1)/vehlist.length*100))),
+                  text:'车辆数据写入···'
+                });
+                if(ind == vehlist.length){
+                  setTimeout(function(){
+                    _self.$store.commit("update_curLoading",{
+                      hidden:false
+                    });
+                    if(vehlist.length == 10000){
+                      _self.pageSize++;
+                      _self.updateDbVehData(_self.user);
+                    }
+                    _self.initPolice();
+                  },1000);
+                }
+              });
+            });
+          });
+        });
+      },
+      //报警类型初始化
+      initPolice(){
+        /*先获取报警类型*/
+        policeType()
+          .then(function (response) {
+            let results = response.data;
+            if (results.result.code == 0) {
+              sessionStorage.setItem('policeTypeCode',JSON.stringify(results.data))
+            }
+          });
+        /**车辆报警列表信息订阅 start**/
+        this.$mqtt.subscribePoliceInfo(this.$store.getters.user.userid);
+        /**end**/
+      }
+    },
+    watch:{
+      //报警信息右侧推送
+      policeDataNum(newVla,oldVal){
+        if (newVla > oldVal){
+          let _this = this;
+          _this.$notify({
+            title: '报警信息',
+            message: _this.$store.getters.policeRightFrame,
+            dangerouslyUseHTMLString: true,
+            type: 'warning',
+            offset:80,
+            duration: 9000
+          });
+        }
+      },
+      //异常信息右侧推送
+      abnormalNum(newVla,oldVal){
+        if (newVla > oldVal){
+          let _this = this;
+          _this.$notify({
+            title: '异常信息',
+            message: _this.$store.getters.abnormalRightFrame,
+            dangerouslyUseHTMLString: true,
+            type: 'warning',
+            offset:80,
+            duration: 9000
+          });
+        }
+      }
+    },
+    created(){
+       /** 初始化用户信息 start **/
+      let user = this.user = {
+        userid:localStorage.getItem('uid')
+        // userid:10819
+      }
+      let _self = this;
+      this.$store.commit('SET_USER',user);
+      /** 初始化用户信息 end **/
+
+      /** 初始化地图默认类型 0 高德 ,1 百度 start **/
+      this.$store.commit('SET_DEFAULT_MAPTYPE');
+      /** 初始化地图默认类型end **/
+
+      /** 连接mqtt start**/
+      this.$mqtt.config.loginUserId = user.userid;
+      this.$mqtt.mqttConnect();
+      /** 连接mqtt end**/
+
+      this.$context.init({preventDoubleContext: false});    //初始化右键菜单
+      
+      this.createdComp((cdata)=>{
+        if(cdata == null){
+          _self.goHome = true;
+          return;
+        }
+        //初始化数据库 根据用户id创建对应版本数据库
+        _self.$indexedDB.initIndexedDB(user.userid,cdata,(res)=>{
+          //如果 前端数据库初始化成功 才进入功能页面
+          if(res == 0) {
+            _self.goHome = true;
+            //加载一级树 初始化公司数据
+            cdata.forEach(function(item,index) {
+              item.disabled = true;
+              item.cid = "c"+item.corpid;//添加公司分组唯一标识
+              item.label = item.corpname;
+              _self.$indexedDB.putData("company",item,function(res){});   //更新前端数据库
+            });
+            _self.updateDbVehData(user);
+          }
+        });
+      })
+    }
+  }
+</script>

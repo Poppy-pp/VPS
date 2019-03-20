@@ -1,0 +1,1244 @@
+<template>
+  <section class="trajectoryFrame">
+    <keep-alive>
+      <div :is="mapComponent" class="hismap" :mapid="'maphis'+vehicleid" ref="hmap"></div>
+    </keep-alive>
+    <!--轨迹表格设置-->
+    <div class="setFrame bounce-enter-active" v-if="SetBtn">
+      <div class="left-top"></div>
+      <div class="right-top"></div>
+      <div class="let-bottom"></div>
+      <div class="right-bottom"></div>
+      <com-frame-box :boxTit="'显示设置'" @closeState="closeSetBox"></com-frame-box>
+      <div class="boxContent">
+        <el-checkbox class="checkSty" v-for="(item,index) in trajectorySetArr" :key="index" :label="item.name" v-model="item.checked"></el-checkbox>
+      </div>
+    </div>
+    <!--end-->
+
+    <!--左上角数据-->
+    <div class="leftTopInfo" :class="autoHeight">
+      <div class="left-top"></div>
+      <div class="right-top"></div>
+      <div class="let-bottom"></div>
+      <div class="right-bottom"></div>
+      <div class="trajtitle">
+        <div class="plateNumberBgk">
+          <span class="plateNumber" v-text="carOwnerDetails.plateNumber"></span>
+        </div>
+        <div class="trajtitler">
+          <span class="carOwner" v-text="carOwnerDetails.carOwner"></span>
+          <i class="iconSex iconfont icon-nan"></i>
+          <i class="iconProtect iconfont icon-baozhang-copy"></i>
+          <i @click="showOrHide" :class="rotateIcon" class="openCarInfo iconfont icon-web_xiangxiazhankai"></i>
+        </div>
+      </div>
+      <div class="detailsInfo">
+        <div class="leftTiT">
+          <p>车架号:</p>
+          <p>所属公司:</p>
+          <p>车辆类型:</p>
+          <p>型号:</p>
+          <p>车身颜色:</p>
+          <p>联系电话:</p>
+          <p>身份证号:</p>
+          <p>接入时间:</p>
+          <p class="mt10">设备信息:</p>
+        </div>
+        <div class="rightINfos">
+          <p :title="carOwnerDetails.FrameNumber" v-text="carOwnerDetails.FrameNumber"></p>
+          <p :title="carOwnerDetails.company" v-text="carOwnerDetails.company"></p>
+          <p :title="carOwnerDetails.carType" v-text="carOwnerDetails.carType"></p>
+          <p :title="carOwnerDetails.model" v-text="carOwnerDetails.model"></p>
+          <p :title="carOwnerDetails.carColor" v-text="carOwnerDetails.carColor"></p>
+          <p :title="carOwnerDetails.phone" v-text="carOwnerDetails.phone"></p>
+          <p :title="carOwnerDetails.IDNumber" v-text="carOwnerDetails.IDNumber"></p>
+          <p :title="carOwnerDetails.accessTime" v-text="carOwnerDetails.accessTime"></p>
+          <p>
+            <el-select v-model="pronumset" multiple collapse-tags placeholder="设备更换" @change="proddataChange">
+              <el-option
+                v-for="item in carOwnerDetails.proddata"
+                :key="item.prodnum"
+                :label="item.prodnum"
+                :value="item.prodnum">
+                  <span>设备号:{{ item.prodnum }}</span>
+                  <span style="color: #FF9800; font-size: 13px">SIM号:{{ item.simcard }}</span>
+              </el-option>
+            </el-select>
+          </p>
+          <p :title="carOwnerDetails.simcard" v-text="carOwnerDetails.simcard"></p>
+        </div>
+      </div>
+    </div>
+    <!--end-->
+    <div class="rightTime bounce-enter-active" v-if="TimeBtn">
+      <el-date-picker
+        @change="searchHistoryRoute"
+        v-model="time"
+        type="datetimerange"
+        align="right"
+        unlink-panels
+        range-separator="至"
+        start-placeholder="开始日期"
+        value-format="yyyy-MM-dd HH:mm:ss"
+        end-placeholder="结束日期">
+      </el-date-picker>
+    </div>
+    <div :class="boxClass">
+      <div class="block">
+        <el-slider :show-tooltip=false :min="sliderMinVal" :max="sliderMaxVal" :step="sliderStepVal" v-model="sliderCurValue"></el-slider>
+      </div>
+      <div class="TrajectoryDatas">
+        <div class="let-bottom" style="left: 20px"></div>
+        <div class="right-bottom" style="right: 20px"></div>
+        <div class="controller">
+          <div class="leftBtn">
+            <i class="iconfont icon-houtui1" @click.stop="routePlayLast"></i>
+            <i class="iconfont icon-bofang" @click.stop="routePlay"></i>
+            <i class="iconfont icon-qianjin" @click.stop="routePlayNext"></i>
+            <i class="iconfont icon-chehui" @click.stop="restartPlay"></i>
+            <i style="font-size: 15px;cursor: default;">{{ curhisD }} / {{ totalHis }}</i>
+            <i class="iconfont icon-houtui2" @click.stop="carHistoryRoutePlaySpeed_change(1)"><span style="font-size: 15px">后退</span></i>
+            <i class="iconfont icon-ai-rew-right" @click.stop="carHistoryRoutePlaySpeed_change(2)"><span style="font-size: 15px">快进</span></i>
+            <span v-if="carHistoryRoutePlaySpeed > 1">{{ 'x '+carHistoryRoutePlaySpeed }}</span>
+          </div>
+          <div class="rightNav">
+            <i @click="openFn('set',$event)" :class="[SetBtn ? 'ate' : '']" class="iconfont icon-shezhi"></i>
+            <i @click="openFn('time',$event)" :class="[TimeBtn ? 'ate' : '']" class="iconfont icon-shijian1"></i>
+            <i @click="openFn('down',$event)"
+                v-loading="downLoading"
+                element-loading-text=""
+                element-loading-spinner="el-icon-loading"
+                element-loading-background="rgba(0, 0, 0, 0.8)"
+                :class="[DownloadBtn ? 'ate' : '']"
+                class="iconfont icon-msnui-download">
+                </i>
+          </div>
+        </div>
+        <!--表格数据-->
+        <div class="tableBox">
+          <el-table
+            class="hisTbale"
+            :data="TrajectoryTable"
+            style="width: 100%"
+            v-loading="trajectLoading"
+            v-loadmore="loadMore"
+            height="27.5vh">
+            <el-table-column
+              fixed
+              type="index"
+              align="center"
+              label="序号"
+              width="50">
+            </el-table-column>
+            <el-table-column
+              prop="carno"
+              align="center"
+              width="280"
+              fixed
+              label="车牌号">
+            </el-table-column>
+            <el-table-column
+              prop="prodnum"
+              align="center"
+              width="180"
+              label="设备号">
+            </el-table-column>
+            <el-table-column
+              prop="gpstime"
+              align="center"
+              width="180"
+              label="GPS时间">
+            </el-table-column>
+            <el-table-column
+              prop="recvtime"
+              align="center"
+              width="180"
+              label="服务器时间">
+            </el-table-column>
+            <el-table-column
+              prop="direct"
+              align="center"
+              label="方向">
+            </el-table-column>
+            <el-table-column
+              prop="veo"
+              align="center"
+              label="速度"
+              width="80">
+            </el-table-column>
+            <el-table-column
+              prop="locationmode"
+              align="center"
+              label="定位方式"
+              width="80">
+            </el-table-column>
+            <el-table-column
+              prop="carstate"
+              align="center"
+              label="车辆状态"
+              width="250">
+              <template slot-scope="prop">
+                <span :id="'carstate'+prop.row.id">{{ prop.row.carstate }}</span>
+              </template>
+            </el-table-column>
+
+            <el-table-column
+              prop="communicationstate"
+              align="center"
+              label="通讯状态"
+              width="250">
+            </el-table-column>
+            <el-table-column
+              prop="isresend"
+              align="center"
+              label="补发"
+              width="50">
+            </el-table-column>
+            <el-table-column
+              prop="address"
+              align="center"
+              label="详细地址"
+              width="350">
+            </el-table-column>
+          </el-table>
+        </div>
+        <!--end-->
+      </div>
+    </div>
+    <div class="carInfoOpen" :class="carsInfosHeight" @click="openAndHide">
+      <i class="xiangxiaIcon iconfont icon-web_xiangxiazhankai"></i>
+    </div>
+  </section>
+</template>
+
+<script>
+  import comFrameBox from '@/components/MessageBox/comFrameBox' //弹框公用头部
+  import {gethistorybyvehicleidandprodnum} from '@/Api/mapApi.js'
+  import utils from '@/utils/tool.js' //工具
+  export default {
+    name: "history",
+    props:['vehicleid'],
+    components: {
+      amap: resolve => {
+        require(['@/components/Map/amap'], resolve)
+      },
+      "com-frame-box":comFrameBox
+    },
+    computed: {
+      //初始化地图类型
+      maptype() {
+        return this.$store.getters.MAPTYPE;
+      },
+      //地图类型
+      mapComponent() {
+        return this.maptype == 0 ? 'amap' : 'bmap';
+      },
+      //打开或关闭轨迹表格
+      boxClass(){
+        let dc = 'TrajectoryBox transitionAll';
+        if(this.carsInfosHeight){
+          dc += ' ' + this.carsInfosHeight;
+        }
+        return dc;
+      }
+    },
+    data() {
+      return {
+        downLoading:false,
+        time: [],                 //选择时间取值
+        navgtr:null,
+        navgtrMarkerContent:null,
+        curMap:null,
+        /*轨迹表格数据*/
+        TrajectoryTable:[],
+        trackSpeedDefault:5000, //初始化速度80km/h
+        carHistoryRoutePlaySpeed:1, //速度选择
+        totalHisPiecewiseRoute:0,   //分段轨迹总数
+        sliderStepVal:1,              //滑块步进
+        sliderMinVal:0,             //滑块最小值
+        sliderMaxVal:1,             //滑块最大值
+        /*轨迹右下角按钮点击状态*/
+        SetBtn: false,
+        TimeBtn: false,
+        DownloadBtn: false,
+        /*end*/
+        /*左上角数据*/
+        carOwnerDetails:{},
+        /*end*/
+        pronumset:[],                                  //切换设备号
+        /*设置复选框*/
+        trajectorySetArr:[
+          {
+            name:'停车点',
+            checked:true,
+            value:1
+          },
+          {
+            name:'行车轨迹',
+            checked:true,
+            value:2
+          },
+          {
+            name:'报警点',
+            checked:false,
+            value:3
+          },
+          {
+            name:'异常点',
+            checked:false,
+            value:4
+          },
+          {
+            name:'原地设防',
+            checked:false,
+            value:5
+          },
+          {
+            name:'电子围栏',
+            checked:true,
+            value:6
+          },
+        ],
+        /*end*/
+        initValue:0,              //轨迹进度条
+        routePointAryList:[],
+        routePointAryListHis:[],
+        routePointAry:[],
+        hisLineArr:[],
+        /*end*/
+        /*轨迹时间进度滑块*/
+        sliderCurValue:0,
+        /*打开关闭轨迹表格Class切换*/
+        carsInfosHeight:'',
+        /*展开关闭车主信息绑class*/
+        rotateIcon:'',
+        autoHeight:'',
+        curhisD:0,                   //当前形成段
+        totalHis:0,                  //总记录数
+        pathSimplifierIns:null,      //绘制路径工具
+        pointSimplifierIns_RoutePoint:null, //点简单过滤
+        pointSimplifierInsIconW:20,
+        pointSimplifierInsIconH:20,
+        /*end*/
+        trajectLoading:true,         //数据加载过渡效果
+        vehicleDrivingList:[],       //车辆驾驶表
+        carno:'',                    //车牌号
+        page:0,                      //页码
+        vehicledetail:''             //车辆基础信息
+
+      }
+    },
+    methods: {
+      //滚动加载更多信息
+      loadMore () {
+        if(this.navgtr != null) return;//如果播放历史轨迹中  不能查看更多
+        var start = 0;
+        var end = 0;
+        var _this = this;
+        _this.page++;
+        start = end = _this.page*10;
+        end += 10;
+        _this.$indexedDB.getDataByPager('vehHistory',start,end,function(result){
+          if(result.data.length == 0) return;
+          result.data.forEach(function(item,index){
+            _this.TrajectoryTable.push(item);
+          })
+        });
+      },
+      //设备切换
+      proddataChange(proinfo){
+        // this.carOwnerDetails.simcard = proinfo.simcard; //切换设备同事同步对应sim卡信息
+      },
+      //格式化导出数据格式
+      formatJson(filterVal, jsonData) {
+　　　　　　return jsonData.map(v => filterVal.map(j => v[j]))
+　　　　},
+      //打开轨迹表格右下三个Nav
+      openFn(type, e) {
+        let _self = this;
+        switch (type) {
+          case 'set': {
+            _self.SetBtn = _self.SetBtn ? false : true;
+            break;
+          }
+          case 'time': {
+            _self.TimeBtn = _self.TimeBtn ? false : true;
+            break;
+          }
+          case 'down': {
+            _self.downLoading = true;
+            //导出当前车辆 历史数据
+            require.ensure([], () => {
+              const { export_json_to_excel } = require('@/vendor/Export2Excel')
+              const tHeader = ['车牌号', '设备号', 'GPS时间','服务器时间','方向','速度','定位方式','车辆状态','通讯状态','补发','详细地址']
+              const filterVal = ['carno', 'prodnum', 'gpstime','recvtime','direct','veo','locationmode','carstate','communicationstate','isresend','address']
+              _self.$indexedDB.getDataBySearch("vehHistory","vehicleidIndex",_self.vehicleid,function(res){
+                const list = res.data;
+                const data = _self.formatJson(filterVal, list)
+                export_json_to_excel(tHeader, data, list[0].carno)
+                _self.downLoading = false;
+              });
+            })
+            break;
+          }
+        }
+      },
+      //关闭设置
+      closeSetBox(){
+        this.SetBtn = false;
+      },
+      //打开关闭轨迹表格
+      openAndHide(){
+        this.carsInfosHeight = (this.carsInfosHeight == '' ? 'tup' : '');
+      },
+      //点击展开/关闭左上角车主信息
+      showOrHide(){
+        let _this = this;
+        if (!_this.rotateIcon) {
+          _this.rotateIcon = 'downTup';
+          _this.autoHeight = 'autoHeight';
+        }else{
+          _this.rotateIcon = '';
+          _this.autoHeight = '';
+        }
+      },
+      //时间查询车辆历史轨迹
+      searchHistoryRoute() {
+        let _this = this;
+        //清空值
+        _this.routePointAryList = [];
+        _this.initPlayView();
+        _this.TrajectoryTable = [];
+
+        //查询
+        _this.initHisINfo();
+      },
+
+      //初始化历史记录默认时间
+      initHisTime(){
+        let nd = new Date();
+        let date_str = nd.getFullYear() + '-' + (nd.getMonth() + 1) + '-' + nd.getDate();
+        this.time = [date_str + " 00:00:00",date_str + " 23:59:59"];
+        // this.time = ["2018-05-24 00:00:00","2018-05-24 23:59:59"];
+        return this;
+      },
+      //初始化车辆 设备 信息
+      initVEhINfo(){
+        let _this = this;
+        _this.$indexedDB.getDataById('vehicleDetail',parseInt(_this.vehicleid),function(result){
+          let res = result.data;
+          _this.carOwnerDetails = {
+            plateNumber: res.basicdata.carno || '暂无',         //车牌号
+            carOwner: res.basicdata.ownername || '-',           //车主
+            FrameNumber:res.basicdata.vin || '-',               //车架号
+            company:res.basicdata.corpname || '-',              //所属公司
+            carType:res.basicdata.vehicletype || '-',           //车辆类型
+            model:res.basicdata.model || '-',                   //型号
+            carColor:res.basicdata.color || '-',                //车身颜色
+            phone:res.basicdata.ownermobile,                    //联系电话
+            IDNumber:res.basicdata.idcard || '-',               //身份证号
+            accessTime:res.basicdata.serviceexpdate || '-',     //接入时间
+            proddata:res.proddata
+          }
+          _this.carno = res.carno;
+          _this.vehicledetail = res;
+          if(res.proddata.length > 0){
+            _this.pronumset = [res.proddata[0].prodnum];
+            _this.initHisINfo();
+          }
+        })
+      },
+
+      //创建车辆麻点图层
+    createRoutePointSimplifierLayer(callback) {
+      var groupStyleMap = null;
+      var _this = this;
+      var map = _this.$hisMapArr.filter(function(item,index){
+        if(Object.keys(item)[0].indexOf(_this.vehicleid) != -1){
+          return item;
+        }
+      })
+      _this.curMap = map[0]['maphis'+_this.vehicleid];
+      AMapUI.load(['ui/misc/PointSimplifier', 'lib/$'], function (PointSimplifier, $) {
+        _this.pointSimplifierIns_RoutePoint = new PointSimplifier({
+            zIndex: 115,
+            autoSetFitView: false,
+            map: _this.curMap, //所属的地图实例
+            getPosition(item) {
+                return [item.lng, item.lat];
+            },
+            getHoverTitle(dataItem, idx) {
+                var msg = "";
+                var istate = dataItem.istate;
+                switch (istate) {
+                    case 2:
+                        //获取显示的表格的停车数据
+                        msg += "<span>状态：</span>停车</br>";
+                        msg += "<span>GPS时间：</span>" + utils.transformTime(dataItem.gpstime) + "</br>";
+                        msg += "<span>服务器时间：</span>" + utils.transformTime(dataItem.recvtime) + "</br>";
+                        msg += "<span>停车时长：</span>" + dataItem.carstate + "</br>";
+                        break;
+                    case 3:
+                        msg += "<span>状态：</span>报警</br>";
+                        msg += "<span>GPS时间：</span>" + utils.transformTime(dataItem.gpstime) + "</br>";
+                        msg += "<span>服务器时间：</span>" + utils.transformTime(dataItem.recvtime) + "</br>";
+                        msg += "<span>报警信息：</span>" + dataItem.alarmcontent + "</br>";
+                        break;
+                    case 1111:
+                        msg += "<span>状态：</span>异常点(" + dataItem.catchinfo + ")</br>";
+                        msg += "<span>GPS时间：</span>" + utils.transformTime(dataItem.gpstime) + "</br>";
+                        msg += "<span>服务器时间：</span>" + utils.transformTime(dataItem.recvtime) + "</br>";
+                        break;
+                }
+                if (dataItem.locationmode == "LBS") {
+                    msg = "";
+                    msg += "<span>LBS</span>定位</br>";
+                    msg += "<span>GPS时间：</span>" + utils.transformTime(dataItem.gpstime) + "</br>";
+                    msg += "<span>服务器时间：</span>" + utils.transformTime(dataItem.recvtime) + "</br>";
+                }
+                return msg;
+            },
+            //使用GroupStyleRender
+            renderConstructor: PointSimplifier.Render.Canvas.GroupStyleRender,
+            renderOptions: {
+                //点的样式
+                pointStyle: {
+                    width: 0,
+                    height: 0,
+                    fillStyle: 'blue'
+                },
+                getGroupId: function (item, idx) {
+                    if (item.locationmode == "LBS") return 111;
+                    else {
+                        if (item.istate == null || item.istate == undefined) return 0;
+                        else return item.istate;
+                    }
+                },
+                groupStyleOptions: function (gid) {
+                    return groupStyleMap[gid];
+                }
+              }
+            });
+            function onIconLoad() {
+                _this.pointSimplifierIns_RoutePoint.renderLater();
+            }
+            function onIconError(e) {
+                console.log('加载失败！');
+            }
+            groupStyleMap = {
+                  2: {
+                      pointStyle: {
+                          //绘制点占据的矩形区域
+                          content: PointSimplifier.Render.Canvas.getImageContent(
+                              '/static/images/car2.png', onIconLoad, onIconError),
+                          //宽度
+                          width: _this.pointSimplifierInsIconW,
+                          //高度
+                          height: _this.pointSimplifierInsIconH,
+                          //定位点为中心
+                          offset: ['-50%', '-50%'],
+                          fillStyle: null
+                      }
+                  },
+                  3: {
+                      pointStyle: {
+                          //绘制点占据的矩形区域
+                          content: PointSimplifier.Render.Canvas.getImageContent(
+                              '/static/images/car3.png', onIconLoad, onIconError),
+                          //宽度
+                          width: _this.pointSimplifierInsIconW,
+                          //高度
+                          height:_this.pointSimplifierInsIconH,
+                          //定位点为中心
+                          offset: ['-50%', '-50%'],
+                          fillStyle: null
+                      }
+                  },
+                  111: {
+                      pointStyle: {
+                          //绘制点占据的矩形区域
+                          content: PointSimplifier.Render.Canvas.getImageContent(
+                              '/static/images/car4.png', onIconLoad, onIconError),
+                          //宽度
+                          width: _this.pointSimplifierInsIconW,
+                          //高度
+                          height: _this.pointSimplifierInsIconH,
+                          //定位点为中心
+                          offset: ['-50%', '-50%'],
+                          fillStyle: null
+                      }
+                  },
+                  1111: {
+                      pointStyle: {
+                          //绘制点占据的矩形区域
+                          content: PointSimplifier.Render.Canvas.getImageContent(
+                              '/static/images/car9.png', onIconLoad, onIconError),
+                          //宽度
+                          width: _this.pointSimplifierInsIconW,
+                          //高度
+                          height: _this.pointSimplifierInsIconH,
+                          //定位点为中心
+                          offset: ['-50%', '-50%'],
+                          fillStyle: null
+                      }
+                  },
+                  10000: {
+                      pointStyle: {
+                          //绘制点占据的矩形区域
+                          content: PointSimplifier.Render.Canvas.getImageContent(
+                              '/static/images/startPoint.png', onIconLoad, onIconError),
+                          //宽度
+                          width: _this.pointSimplifierInsIconW + 10,
+                          //高度
+                          height: _this.pointSimplifierInsIconH + 10,
+                          //定位点为中心
+                          offset: ['-50%', '-50%'],
+                          fillStyle: null
+                      }
+                  },
+                  10001: {
+                      pointStyle: {
+                          //绘制点占据的矩形区域
+                          content: PointSimplifier.Render.Canvas.getImageContent(
+                              '/static/images/endPoint.png', onIconLoad, onIconError),
+                          //宽度
+                          width: _this.pointSimplifierInsIconW + 10,
+                          //高度
+                          height: _this.pointSimplifierInsIconH + 10,
+                          //定位点为中心
+                          offset: ['-50%', '-50%'],
+                          fillStyle: null
+                      }
+                  }
+              }
+            //回调
+            if (callback != null) callback();
+        });
+    },
+    /********************************************分段轨迹*************************************************/
+    //清除所有分段轨迹
+    cleanPiecewiseRoute() {
+      if (this.pathSimplifierIns != null)
+        this.pathSimplifierIns.setSelectedPathIndex(-1);
+    },
+    //获取随机颜色
+    getColor() {
+        return "#" + ("00000" + ((Math.random() * 16777215 + 0.5) >> 0).toString(16)).slice(-6);
+    },
+    //创建分段轨迹操作
+    drawPiecewise(list) {
+        var result = [];
+        var _this = this;
+        //创建分段
+        for (var i = 0,len = list.length; i < len; i++) {
+            var data = list[i];
+            //借助polyline计算距离
+            var points = [];
+            for (var j = 0; j < data.length; j++) {
+                points.push([data[j].lng, data[j].lat]);
+            }
+            //构造线
+            var trackPolyline = new AMap.Polyline({
+                path: points, //设置线覆盖物路径
+                strokeColor: _this.getColor(), //线颜色
+                strokeOpacity: 1, //线透明度
+                strokeWeight: 5, //线宽
+                strokeStyle: "solid", //线样式
+                strokeDasharray: [10, 5], //补充线样式
+                showDir: true,
+                lineJoin: "round"
+            });
+            //平均速度
+            var t = (new Date(data[data.length - 1].gpstime) - new Date(data[0].gpstime)) / (1000 * 60 * 60);
+            var s = ((trackPolyline.getLength() / 1000) / t).toFixed(2);
+            //创建dom
+            // var divId = "route_" + i;
+            var name = "行程段-" + (i + 1);
+            // var dom = '<div id=' + divId + ' class="piecewise_route_div" onmouseover="piecewise_onmouseover(this)" onmouseout="piecewise_onmouseout(this)" onclick="zoomToRoute(this)">' +
+            //     '<div class="col-md-12">起点：<span id="' + divId + '_start">' + data[0].lng + "," + data[0].lat + '</span></div>' +
+            //     '<div class="col-md-12">终点：<span id="' + divId + '_end">' + data[data.length - 1].lng + "," + data[data.length - 1].lat + '</span></div>' +
+            //     '<div class="col-md-12">时长：<span>' + utils.getTCSC(data[0].gpstime, data[data.length - 1].gpstime) + '</span></div>' +
+            //     '<div class="col-md-6">距离：<span>' + (trackPolyline.getLength() / 1000).toFixed(2) + '&nbsp;km</span></div>' +
+            //     '<div class="col-md-6" style="color: blue;">' + name + '</div>' +
+            //     '<div class="col-md-12">平均速度：<span>' + s + '&nbsp;km/h</span></div>' +
+            // '</div>';
+            // $("#routeListWindow").append(dom);
+            // 地理编码
+            // getPoint2Address(divId + "_start", [data[0].lng, data[0].lat], function (id, result) {
+            //     $("#" + id).html(result);
+            // });
+            // getPoint2Address(divId + "_end", [data[data.length - 1].lng, data[data.length - 1].lat], function (id, result) {
+            //     $("#" + id).html(result);
+            // });
+
+            //返回值创建
+            result.push({
+                index: i,
+                name: name,
+                distance: trackPolyline.getLength() / 1000,
+                data: data
+            });
+        }
+        return result;
+    },
+
+    //创建分段轨迹
+    createPiecewiseRoute() {
+      var _this = this;
+        //先清除
+        _this.cleanPiecewiseRoute();
+        var list = [];
+        //数据分段
+        if (_this.routePointAryList.length > 0) {
+            var piecewise = [];
+            for (var i = 0,len = _this.routePointAryList.length; i < len; i++) {
+                if (_this.routePointAryList[i].catch) continue;
+                if (i > 0 && _this.routePointAryList[i].lng == _this.routePointAryList[i - 1].lng) continue;
+                //点
+                piecewise.push(_this.routePointAryList[i]);
+                //分段
+                if (_this.routePointAryList[i].veo == 0 && i > 0 && i < _this.routePointAryList.length - 1 && new Date(_this.routePointAryList[i + 1].gpstime) - new Date(_this.routePointAryList[i].gpstime) > 10 * 60 * 1000) {
+                    //绘制该分段路径
+                    list.push(piecewise);
+                    //初始化起点
+                    piecewise = [];
+                    piecewise.push(_this.routePointAryList[i]);
+                }
+            }
+
+            //绘制该分段路径
+            if (piecewise.length > 1)
+                list.push(piecewise);
+        }
+        //构造
+        var result = _this.drawPiecewise(list);
+        _this.totalHisPiecewiseRoute = result.length;
+        return result;
+    },
+    //创建轨迹
+    createTrackRoute(routePointAryList) {
+      var _this = this;
+      //创建分段轨迹
+      var list = _this.createPiecewiseRoute();
+      if (_this.pathSimplifierIns == null) {
+        _this.initPathSimplifierIns(routePointAryList, _this.createTrackRoute);
+      }
+      //轨迹总长
+      var l = 0;
+      for (var i = 0,len = list.length; i < len; i++) {
+        l += list[i].distance;
+      }
+      //设置数据
+      if (_this.pathSimplifierIns != null) {
+        _this.pathSimplifierIns.setData(list);
+        //选中
+        _this.pathSimplifierIns.setSelectedPathIndex(-1);
+      }
+    },
+      //绘制路径
+      initPathSimplifierIns(routePointAryList, callback){
+        let _this = this;
+        AMapUI.load(['ui/misc/PathSimplifier', 'lib/$'], function(PathSimplifier, $) {
+            if (!PathSimplifier.supportCanvas) {
+                alert('当前环境不支持 Canvas！');
+                return;
+            }
+            var map = _this.$hisMapArr.filter(function(item,index){
+              if(Object.keys(item)[0].indexOf(_this.vehicleid) != -1){
+                return item;
+              }
+            })
+            _this.curMap = map[0]['maphis'+_this.vehicleid];
+            _this.pathSimplifierIns = new PathSimplifier({
+                zIndex: 100,
+                //autoSetFitView:false,
+                map: _this.curMap, //所属的地图实例
+                getPath (pathData, pathIndex) {
+                  var points = pathData.data,
+                    lnglatList = [];
+                  for (var i = 0, len = points.length; i < len; i++) {
+                      if (!points[i].catch)
+                          lnglatList.push([points[i].lng, points[i].lat]);
+                  }
+                  return lnglatList;
+                },
+                getHoverTitle (pathData, pathIndex, pointIndex) {
+                    if (pointIndex >= 0) {
+                        //point
+                        return pathData.name + ',' + utils.transformTime(pathData.data[pointIndex].gpstime);
+                    }
+                    //line
+                    return pathData.name;
+                },
+                renderOptions: {
+                    renderAllPointsIfNumberBelow: 100, //绘制路线节点，如不需要可设置为-1
+                    //轨迹线的样式
+                    pathLineStyle: {
+                        strokeStyle: "#3366FF",
+                        lineWidth: 4,
+                        dirArrowStyle: true
+                    },
+                    startPointStyle: {
+                        radius: 0,
+                        fillStyle: "green"
+                    },
+                    endPointStyle: {
+                        radius: 0,
+                        fillStyle: "red"
+                    }
+                }
+            });
+            //创建车辆图标
+            _this.navgtrMarkerContent = PathSimplifier.Render.Canvas.getImageContent('/static/images/car/routetrackcar.png', function () {
+                _this.pathSimplifierIns.renderLater();
+            }, function () { });
+
+            //回调绘制
+           if(callback != null) callback(routePointAryList);
+        });
+      },
+      //运算异常点
+      operationCatchPoint(pointDataStart, pointDataEnd) {
+        if (pointDataStart == null || pointDataEnd == null) return { state: true, catchinfo: "该段行驶速度超过160km/h", distance: 0 };
+        if (pointDataEnd.locationmode == 'NAVIGATE') return { state: false, catchinfo: "", distance: 0 };
+        if (pointDataEnd.locationmode == "LBS") return { state: true, catchinfo: "LBS定位", distance: 0 };
+        let info = { state: false, catchinfo: "", distance: 0 };
+        //时间差h
+        let t = ((new Date(pointDataEnd.gpstime) - new Date(pointDataStart.gpstime)) / 1000) / 3600;
+        //距离km
+        let p = new AMap.LngLat(pointDataStart.lng, pointDataStart.lat);
+        let l = p.distance([pointDataEnd.lng, pointDataEnd.lat]) / 1000;
+        //速度超过160km/h或者距离超过100km
+        if (l / t > 160 || l>100) {
+            info.state = true;
+            info.catchinfo = "该段行驶速度超过160km/h";
+        }
+        info.distance = l;
+        return info;
+      },
+      //优化车辆轨迹
+      initVehicleDriving() {
+        var _this = this;
+        _this.vehicleDrivingList = [];
+        for (var i = 0,len = _this.routePointAryList.length; i < len; i++) {
+            //不为异常点且大于2公里
+            if (!_this.routePointAryList[i].catch && _this.routePointAryList[i].distance >= 1) {
+                //寻找该点的上一个非异常点
+                var startP = null;
+                for (var j = i - 1; j >= 0; j--) {
+                    if (!_this.routePointAryList[j].catch) {
+                        startP = _this.routePointAryList[j];
+                        break;
+                    }
+                }
+                //加入导航任务列表
+                if (startP != null)
+                _this.vehicleDrivingList.push({ index: i, startP: startP, endP: _this.routePointAryList[i] });
+            }
+        }
+        //路径补全
+        if (_this.vehicleDrivingList.length > 0 ) {
+            // $("#drivingExcute").css("visibility", "visible");
+        }
+      },
+      //格式化表格数据
+      fomartTableData(row){
+        var _this = this;
+        var rows = [];
+        //判断有效点参考点（起始点开始5个点为标准）----无线设备不予进行异常点判断
+        var truePoint = null, truePointIndex = 0;
+        //获取设备类型
+        var prodinfo = null;
+        for (var i = 0,len = _this.vehicledetail.proddata.length; i < len;i++){
+            if( _this.vehicledetail.proddata[i].prodnum == row[0].prodnum){
+                prodinfo = _this.vehicledetail.proddata[i];
+                break;
+            }
+        }
+        if (prodinfo != null && prodinfo.prodspec == "无线") {
+            truePoint = row[0];
+        }else{
+          for (var i = 0,len = row.length; i < len; i++) {
+            if (row[i].locationmode != "GPS") continue;
+            //假定参考点
+            truePointIndex = i;
+            truePoint = row[i];
+            //判断参考点正确性
+            let b = 0;
+            for (var j = i + 1; j < i + 20; j++) {
+                let item = _this.operationCatchPoint(row[i], row[j]);
+                if (!item.state) {
+                    b += 1;
+                }
+                if (b >= 15) break;
+            }
+            if (b >= 15) break;
+          }
+        }
+        //是否需要优化路径
+        var needDriving = true;
+        //循环处理
+        for (var i = 0,len = row.length; i < len; i++) {
+            //是否已包含已导航的数据
+            if (row[i].locationmode == 'NAVIGATE') needDriving = false;
+            //坐标偏移处理
+            let gcj_02_point = utils.transformWGStoGCJ(row[i].lng, row[i].lat);
+            row[i].lng = gcj_02_point[0];
+            row[i].lat = gcj_02_point[1];
+            //地址坐标
+            let address = row[i].position;
+            if (address == null || address == undefined) {
+                if (row[i].lng > 1)
+                    address = row[i].lng + "," + row[i].lat;
+                else
+                    address = "";
+            }
+            //标识符
+            row[i].id = i;
+            let locationmode = row[i].locationmode;
+            if (locationmode == null) locationmode = "GPS";
+
+            let isreissue = "否";
+            if ((row[i].isreissue+"").trim() != "0") isreissue = "是";
+            //车辆状态
+            let statu = -1;//行驶
+            if (row[i].veo == 0) {
+                if (i < row.length - 1) {
+                    //计算当前点和后一个点的时间差
+                    statu = new Date(row[i + 1].gpstime) - new Date(row[i].gpstime);
+                    //累计停车时长(如果上一个点也为停车点)
+                    if (i > 0 && row[i - 1].veo == 0)
+                        statu += rows[i - 1].carstate;
+                }
+                else {
+                    statu = 0;
+                }
+            }
+            //构造表格行
+            let srow = {
+              id:row[i].id,
+              vehicleid:row[i].vehicleid,
+              carno: _this.carno,
+              prodnum: row[i].prodnum,
+              gpstime: utils.transformTime(row[i].gpstime),
+              recvtime: utils.transformTime(row[i].recvtime),
+              direct: utils.fomateFX(row[i].direct),
+              veo: row[i].veo,
+              locationmode: locationmode,
+              carstate: statu,
+              communicationstate: row[i].cstate,
+              isresend: isreissue,
+              address: address,
+              lng: row[i].lng,
+              lat: row[i].lat
+            };
+            rows.push(srow);
+            //轨迹点
+            row[i].catch = true;
+            if (i < truePointIndex) {
+                //异常点
+                if (i == 0 || row[i].lng != row[i - 1].lng || row[i].lat != row[i - 1].lat) {
+                    row[i].istate = 1111;
+                    row[i].catchinfo = "该段行驶速度超过160km/h";
+                    _this.routePointAryList.push(row[i]);
+                }
+            }
+            else if (i == truePointIndex) {
+                //组装轨迹点
+                row[i].catch = false;
+                row[i].distance = 0;
+                _this.routePointAryList.push(row[i]);
+            }
+            else {
+                //组装轨迹点
+                var info = _this.operationCatchPoint(truePoint, row[i]);
+                if (!info.state) {
+                    row[i].catch = false;
+                    row[i].distance = info.distance;
+
+                    truePoint = row[i];
+                }
+                else {
+                    //异常点
+                    row[i].istate = 1111;
+                    row[i].catchinfo = info.catchinfo;
+                }
+                _this.routePointAryList.push(row[i]);
+            }
+        }
+        //格式化停车时长
+        for (var i = 0,len = row.length; i < len; i++) {
+          switch (rows[i].carstate) {
+            case -1: rows[i].carstate = "行驶"; break;
+            case 0: rows[i].carstate = "停车"; break;
+            default:
+                //停车时长格式化
+                rows[i].carstate = "停车("+utils.formatTCSC(rows[i].carstate)+")"; break;
+          }
+          if(_this.routePointAryList[i])
+          _this.routePointAryList[i].carstate = rows[i].carstate;
+        }
+        _this.totalHis = _this.routePointAryList.length;
+        //初始化播放界面
+        _this.initPlayView();
+        //将当前车的历史轨迹存入 本地数据库
+        rows.forEach(function(item,index){
+          _this.$indexedDB.addData('vehHistory',item,function(result){});
+          if(index < 10) _this.TrajectoryTable.push(item);
+        })
+
+        _this.createTrackRoute(_this.routePointAryList); //设置轨迹路径线数据
+
+        //起点终点设置
+        _this.routePointAryList[0].istate = 10000;
+        _this.routePointAryList[_this.routePointAryList.length - 1].istate = 10001;
+
+        if(_this.pointSimplifierIns_RoutePoint == null){
+          _this.createRoutePointSimplifierLayer(function(){
+            _this.pointSimplifierIns_RoutePoint.setData(_this.routePointAryList);
+          })
+        }else{
+          _this.pointSimplifierIns_RoutePoint.setData(_this.routePointAryList);
+        }
+        //优化轨迹
+        if (needDriving) _this.initVehicleDriving();
+
+        _this.batchAddressTransform(rows,0);
+      },
+      //递归 地址解析
+      batchAddressTransform(rows,ind) {
+        let _this = this;
+        if(rows.length == ind) return;
+        let row = rows[ind];
+        let lng = row.lng;
+        let lat = row.lat;
+        let vehflag = this.$store.getters.hisZoom.info.filter(function(item,index){
+          if(_this.curMap.getContainer().id.indexOf(item.vehicleid) != -1){
+            return item;
+          }
+        });
+        if(vehflag.length == 0) return;
+        _this.$map.$methods.getPointAddress([lng,lat],function(data){
+          row.address = data;
+          _this.$indexedDB.updateData('vehHistory',row.id,row,function(result){});
+          _this.batchAddressTransform(rows,++ind);
+        });
+      },
+      //初始化播放界面
+      initPlayView() {
+        var _this = this;
+        //统计信息赋值
+        _this.curhisD  = 0;
+        _this.totalHis = _this.routePointAryList.length;
+        //初始化进度slider
+        _this.sliderMaxVal = _this.routePointAryList.length;
+        _this.sliderMinVal = 0;
+        _this.sliderStepVal = 1;
+        _this.sliderCurValue = 1;
+        _this.$indexedDB.cursorDeldteData('vehHistory','vehicleidIndex',_this.vehicleid);
+        //播放按钮初始化
+        $("i.icon-bofang").removeClass("icon-zanting").attr("title", "播放");
+      },
+      //轨迹播放
+      routePlay(e) {
+        var _this = this;
+        if (!$(e.target).hasClass("icon-zanting")) {
+            if (_this.routePointAryList.length == 0) {
+                _this.$message({
+                  message: '未获取到相关历史数据！',
+                  type: 'error'
+                });
+                return;
+            }
+            $(e.target).addClass("icon-zanting").attr("title", "暂停");
+            if (_this.navgtr != null && _this.navgtr.getNaviStatus() == "pause")
+              _this.navgtr.resume();
+            else
+              _this.routeToPlay(0);
+        }
+        else {
+          $(e.target).removeClass("icon-zanting").attr("title", "播放");
+          _this.navgtr.pause();
+        }
+      },
+      //历史轨迹播放
+      routeToPlay(pathIndex) {
+        var _this  = this;
+        //初始化进度条
+        _this.sliderMaxVal = _this.pathSimplifierIns.getPathData(pathIndex).data.length;
+
+        //定位到初始点
+        var p =  _this.pathSimplifierIns.getPathData(pathIndex).data[0];
+        _this.curMap.setCenter([p.lng, p.lat]);
+        //执行
+        var startIndex = _this.sliderCurValue;
+        var speed = _this.trackSpeedDefault * _this.carHistoryRoutePlaySpeed;
+        if (speed == null || speed == undefined || speed == "") {
+            speed = _this.trackSpeedDefault;
+        }
+        //创建一个轨迹巡航器
+        _this.navgtr =  _this.pathSimplifierIns.createPathNavigator(pathIndex, {
+            speed: speed,
+            pathNavigatorStyle: {
+                //width: 24,
+                //height: 24,
+                //content: "defaultPathNavigator"
+                width: 15,
+                height: 30,
+                content: _this.navgtrMarkerContent
+            }
+        });
+        $("div.hisTbale .el-table__body-wrapper").scrollTop(0);
+        //行驶事件
+        _this.navgtr.on("move", function () {
+            //获取当前轨迹段
+            var pathIndex = this.getPathIndex();
+            //获取当前轨迹段轨迹点
+            var point =  _this.pathSimplifierIns.getPathData(pathIndex).data[this.getCursor().idx];
+
+            //设置进度
+            _this.sliderCurValue = this.getCursor().idx;
+            _this.curhisD = point.id + 1;
+            _this.totalHis = _this.routePointAryList.length;
+
+            //设置表格选中项
+            _this.$indexedDB.getDataById('vehHistory',point.id,(res)=>{
+              if($("#carstate"+res.data.id).length == 0){
+                _this.TrajectoryTable = [res.data];
+                // _this.TrajectoryTable.splice(0,1,res.data);
+                setTimeout(function(){ $("#carstate"+res.data.id).parents("tr").addClass("hover-row");},10);
+              }
+              if(this.isCursorAtPathEnd() == null){
+                _this.TrajectoryTable = _this.routePointAryListHis;
+              }
+            })
+            //销毁自身
+            if (this.isCursorAtPathEnd()) {
+              this.destroy();
+              _this.navgtr = null;
+              if(_this.totalHisPiecewiseRoute > pathIndex+1)
+                _this.routeToPlay(pathIndex + 1);
+              else
+                $("i.icon-zanting").removeClass("icon-zanting").attr("title", "播放");
+            }
+        });
+        _this.routePointAryListHis = _this.TrajectoryTable; //存储 之前播放前的历史列表信息
+        //执行
+        _this.navgtr.start(0);
+      },
+      //速度变化事件
+      carHistoryRoutePlaySpeed_change(ty) {
+        var _this = this;
+        if(ty == 1){
+          _this.carHistoryRoutePlaySpeed = Math.max(1,_this.carHistoryRoutePlaySpeed/2);
+        }else{
+          _this.carHistoryRoutePlaySpeed = Math.min(32,_this.carHistoryRoutePlaySpeed*2);
+        }
+        if (_this.navgtr != null && _this.navgtr.getNaviStatus() == "moving")
+            _this.navgtr.setSpeed(_this.trackSpeedDefault * _this.carHistoryRoutePlaySpeed);
+      },
+      //重新回放
+      restartPlay() {
+        var _this = this;
+        if (!$('i.icon-bofang').hasClass("icon-zanting"))
+            $('i.icon-bofang').addClass("icon-zanting").attr("title", "暂停");
+        if (_this.navgtr != null) {
+            _this.navgtr.destroy();
+            _this.navgtr = null;
+        }
+        //重新开始
+        _this.routeToPlay(0);
+      },
+      //上一段行程
+      routePlayLast() {
+          var startPathIndex = 0;
+          var _this = this;
+          if (!$('i.icon-bofang').hasClass("icon-zanting"))
+            $('i.icon-bofang').addClass("icon-zanting").attr("title", "暂停");
+          if (_this.navgtr != null) {
+              if (_this.navgtr.getPathIndex() == 0) {
+                _this.$message({
+                  message: '已经是第一段行程！',
+                  type: 'warning'
+                });
+              }
+              else
+                  startPathIndex = _this.navgtr.getPathIndex() - 1;
+              _this.navgtr.destroy();
+              _this.navgtr = null;
+          }
+          if (startPathIndex >= 0)
+              _this.routeToPlay(startPathIndex);
+      },
+      //下一段行程
+      routePlayNext() {
+          var startPathIndex = 0;
+          var _this = this;
+          if (!$('i.icon-bofang').hasClass("icon-zanting"))
+            $('i.icon-bofang').addClass("icon-zanting").attr("title", "暂停");
+          if (_this.navgtr != null) {
+              if (_this.navgtr.getPathIndex() >= _this.pathSimplifierIns._data.pathNum - 1) {
+                  _this.$message({
+                    message: '已经是最后段行程！',
+                    type: 'warning'
+                  });
+              }
+              else
+                  startPathIndex = _this.navgtr.getPathIndex() + 1;
+              _this.navgtr.destroy();
+              _this.navgtr = null;
+          }
+          if (startPathIndex <= _this.pathSimplifierIns._data.pathNum - 1)
+              _this.routeToPlay(startPathIndex);
+      },
+
+      //初始化历史轨迹信息
+      initHisINfo(){
+        let _this = this;
+        let para = {
+          id : _this.vehicleid + ',' + _this.pronumset.join(","),
+          condition : _this.time.join("|"),
+        }
+        _this.trajectLoading = true;
+        gethistorybyvehicleidandprodnum(para).then(function(res){
+          _this.trajectLoading = false;
+          if(res.data.result.code == 0){
+            var row = res.data.data;
+            _this.fomartTableData(row);
+          }
+        })
+      }
+    },
+    created(){
+      this.initHisTime().initVEhINfo();
+    }
+  }
+</script>
+
+<style scoped>
+  section.trajectoryFrame{
+    width: 100%;
+    height: 100%;
+  }
+  i.pronumRplace:hover{
+    color:#067816;
+    cursor: pointer;
+  }
+  div.trajtitle{
+    overflow: hidden;
+  }
+  div.trajtitle div.plateNumberBgk{
+    border-radius: 5px;
+    padding: 2px;
+    max-width: 100px;
+    overflow: hidden;
+    float: left;
+    text-overflow: ellipsis;
+  }
+  div.trajtitle div.trajtitler{
+    width: 175px;
+    line-height: 26px;
+    float: right;
+  }
+</style>

@@ -1,0 +1,72 @@
+<template>
+    <section id="remarksBox">
+      <!-- 四边小角 -->
+      <div class="left-top"></div>
+      <div class="right-top"></div>
+      <div class="let-bottom"></div>
+      <div class="right-bottom"></div>
+      <div class="header">
+          <span>备忘录</span>
+     </div>
+     <div class="remarksInfo">
+          <p>
+              <span>这是一条备注这是一条备注这是一条备注这是一条备注这是一条备注...</span>
+              <span style="margin-left:30px">谭鹏(万网公司) 2018-04-01</span>
+         </p>
+           <p>
+              <span>这是一条备注这是一条备注这是一条备注这是一条备注这是一条备注...</span>
+              <span style="margin-left:30px">谭鹏(万网公司) 2018-04-01</span>
+         </p>
+           <p>
+              <span>这是一条备注这是一条备注这是一条备注这是一条备注这是一条备注...</span>
+              <span style="margin-left:30px">谭鹏(万网公司) 2018-04-01</span>
+         </p>
+           <p>
+              <span>这是一条备注这是一条备注这是一条备注这是一条备注这是一条备注...</span>
+              <span style="margin-left:30px">谭鹏(万网公司) 2018-04-01</span>
+         </p>
+           <p>
+              <span>这是一条备注这是一条备注这是一条备注这是一条备注这是一条备注...</span>
+              <span style="margin-left:30px">谭鹏(万网公司) 2018-04-01</span>
+         </p>
+           <p>
+              <span>这是一条备注这是一条备注这是一条备注这是一条备注这是一条备注...</span>
+              <span style="margin-left:30px">谭鹏(万网公司) 2018-04-01</span>
+         </p>
+     </div>
+    </section>
+</template>
+<script>
+export default {
+  name: '',
+  data () {
+    return {
+    }
+  },
+  mounted () {
+    // let _this=this;
+    // _this.$nextTick(function(){
+    //   _this.drawLine();
+    // })
+  },
+  methods: {
+    // drawLine() {
+    //   // 基于准备好的dom，初始化echarts实例
+    //   let parentDiv = document.querySelector("#remarksBox");
+    //   //自适应宽高
+    //   let myChartContainer = function () {
+    //     parentDiv.style.height = window.innerHeight/3.39 +'px';
+    //   };
+    //   myChartContainer();
+    //   //浏览器大小改变时重置大小
+    //   window.addEventListener("resize", function () {
+    //     myChartContainer();
+    //   });
+    // }
+  }
+}
+</script>
+<style scoped>
+
+</style>
+

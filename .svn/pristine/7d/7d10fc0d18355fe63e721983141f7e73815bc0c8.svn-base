@@ -1,0 +1,192 @@
+<template>
+  <section id="comFrame">
+    <div class="box bounce-enter-active">
+      <div style="padding: 10px 18px 0 18px;">
+        <div class="left-top"></div>
+        <div class="right-top"></div>
+        <div class="let-bottom"></div>
+        <div class="right-bottom"></div>
+        <com-frame-box @closeState="closeState" :boxTit="fortificationDatas.boxTit"></com-frame-box>
+        <div class="boxContent">
+          <p style="margin: 8px 0">
+                  <span class="plateNumberBgk" style=" display: inline-block;border-radius: 5px;padding: 5px 2px;">
+                    <span class="plateNumber" v-text="fortificationDatas.carno"></span>
+                  </span>
+            <span class="carOwner" v-text="fortificationDatas.carOwner"></span>
+            <span style="margin-left:20px;color: #00d452;cursor: pointer" v-if="fortificationDatas.showDelSf" @click="delSf">取消原地设防</span>
+          </p>
+          <p class="lineInfo iconfont icon-78" v-if="fortificationDatas.lg">
+            <span class="lg"> 设防经度 :{{fortificationDatas.lg}}</span>&nbsp;&nbsp;
+            <span class="lt"> 设防纬度 :{{fortificationDatas.lt}}</span>
+          </p>
+          <p class="lineInfo iconfont icon-weizhi" v-if="fortificationDatas.sfplace">
+            (设防位置) <span class="place" v-text="fortificationDatas.sfplace"></span>
+          </p>
+          <p class="lineInfo iconfont icon-weizhi">
+            (当前位置) <span class="place" v-text="fortificationDatas.place"></span>
+          </p>
+          <p class="lineInfo iconfont icon-juli">
+            设防距离: <el-input v-model="fortificationDatas.distance" placeholder=""></el-input> 米
+          </p>
+        </div>
+        <hr class="hrColor">
+      </div>
+      <div class="sendBtn" @click="confirm">
+        <span>确定</span>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script>
+  import comFrameBox from '@/components/MessageBox/comFrameBox' //弹框公用头部
+  import utils from '@/utils/tool';                                //引入工具
+  import {getYdsfInfo,addYdsf,updateYdsf,delYdsf} from '@/Api/mapApi.js'
+  export default {
+    name: "",
+    components: {
+      comFrameBox
+    },
+    props: ['frameProp'],
+    data() {
+      return {
+        fortificationDatas:this.frameProp,   //传过来的弹框信息
+      }
+    },
+    mounted() {
+    },
+    methods: {
+      //设防
+      confirm(){
+        if(!(+this.fortificationDatas.distance)){
+          this.$message.warning('设防距离应该大于0米！');
+          return;
+        }
+        //参数
+        let ydsfInfo= this.$store.getters.moveCarInfo;                   //获取状态树 原地设防数据
+        let params={};
+        params.VehicleId=ydsfInfo.vehicleid;
+        params.LngLat=ydsfInfo.lng+','+ydsfInfo.lat;
+        params.Radius=this.fortificationDatas.distance;
+        params.ID=this.fortificationDatas.id;
+        params.IsDelete=0;
+        params.Remarks='';
+        params.CreateDate=utils.formatDate.formatTime(new Date().getTime());
+        params.CreateBy=this.$store.getters.user.userid;
+        params.UpdateDate='';
+        params.UpdateBy=this.$store.getters.user.userid;
+        
+        //修改
+        if(this.fortificationDatas.showDelSf)
+          this.updateSf(params);
+        //添加
+        else
+          this.addSf(params);
+      },
+      addSf(params){
+        let that = this;
+        /*增加设防*/ 
+        addYdsf(params).then(function (response) {
+            if(response.data.result.code==0){
+              //设防成功，显示解除原地设防
+              that.fortificationDatas.showDelSf=true; 
+              that.fortificationDatas.sfplace=that.fortificationDatas.place;
+              //请求数据
+              getYdsfInfo({id:that.$store.getters.moveCarInfo.vehicleid,userid:that.$store.getters.user.userid}).then(function (response) {
+                let info=response.data;
+                if(info.result.code==0){
+                  that.fortificationDatas.id = info.data.ID;
+                  that.fortificationDatas.lg=info.data.LngLat.split(',')[0];
+                  that.fortificationDatas.lt=info.data.LngLat.split(',')[1];
+                  //绘制原地设防
+                  let mapObj = that.$store.getters.mapObj;
+                  let lnglatXY = new AMap.LngLat(info.data.LngLat.split(',')[0],info.data.LngLat.split(',')[1]);
+                  let circle = new AMap.Circle({
+                        center: lnglatXY,         //圆心位置
+                        offset: new AMap.Pixel(-22.5, -23),                          //偏移
+                        radius: info.data.Radius,                                    //半径
+                        strokeColor: "#F33",                                         //线颜色
+                        strokeOpacity: 1,                                            //线透明度
+                        strokeWeight: 1,                                             //线粗细度
+                        fillColor: "#ee2200",                                        //填充颜色
+                        fillOpacity: 0.35,
+                        extData: { ydsfid: that.$store.getters.moveCarInfo.vehicleid }                                         //填充透明度
+                      });
+                      circle.setMap(mapObj);
+                }
+              });
+              that.$message.success('设防成功');
+            }else{
+              that.$message.warning('设防失败');
+            }
+          }).catch(function (error) {
+        });
+      },
+      updateSf(params){
+        /*修改设防*/ 
+        let that = this;
+        let vehicleid = this.$store.getters.moveCarInfo.vehicleid;
+        updateYdsf(params).then(function (response) {
+            let info=response.data;
+            if(info.result.code==0){
+              /*修改半径*/
+              that.$store.getters.mapObj.getAllOverlays("circle").forEach(function(e){
+                if(e.getExtData().ydsfid == vehicleid) e.setRadius(that.fortificationDatas.distance);
+              });
+              that.$message.success('修改原地设防成功');
+            }else{
+              that.$message.warning('修改原地设防失败');
+            }
+          }).catch(function (error) {
+        });
+      },
+      delSf(){
+        let this1=this;
+        let params= {};                                                  //获取设防信息传值
+        let ydsfInfo= this1.$store.getters.moveCarInfo;                   //获取状态树 原地设防数据
+        params.id = ydsfInfo.vehicleid;
+        params.userid = this1.$store.getters.user.userid;
+        delYdsf(params)
+          .then(function (response) {
+            let info=response.data;
+            if(info.result.code==0){
+              let frameProps=this1.frameProp;
+              let mapObj=this1.$store.getters.mapObj;
+              /*取消设防，清楚状态树数据*/
+              frameProps.lg='';
+              frameProps.lt='';
+              frameProps.sfplace='';
+              frameProps.showDelSf=false;
+              frameProps.distance=0;
+              /*删除原地设防*/
+              this1.$store.getters.mapObj.getAllOverlays("circle").forEach(function(e){
+                if(e.getExtData().ydsfid == ydsfInfo.vehicleid)
+                  e.setMap(null);
+              });
+              this1.$message.success('取消设防成功');
+            }
+          }).catch(function (error) {
+        });
+      },
+      //关闭弹框
+      closeState(){
+        /*删除原地设防*/
+        let vehicleid = this.$store.getters.moveCarInfo.vehicleid;
+        this.$store.getters.mapObj.getAllOverlays("circle").forEach(function(e){
+          if(e.getExtData().ydsfid == vehicleid) e.setMap(null);
+        });
+        //关闭
+        this.$store.commit('carBoxOpenOrClose',{$closeClass:'ydsf'});
+      }
+    },
+    filters: {},
+    watch: {},
+  }
+</script>
+
+<style scoped>
+
+</style>
+<style>
+
+</style>

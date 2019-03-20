@@ -1,0 +1,216 @@
+<template>
+    <section id="carPoliceBox" >
+      <!-- 四边小角 -->
+      <div class="left-top"></div>
+      <div class="right-top"></div>
+      <div class="let-bottom"></div>
+      <div class="right-bottom"></div>
+      <div class="detail">
+        <div class="header">
+          <span>车辆报警</span>
+          <span style="font-size: 20px; margin-left:5px">{{listData.total}}次</span>
+        </div>
+        <ul class="infoTit">
+          <li v-for="item in listData.value">{{ item.name }} <span>次</span><span style="margin-right: 4px" v-text="item.num"></span></li>
+        </ul>
+      </div>
+      <div id="alarmChart"></div>
+
+    </section>
+</template>
+<script>
+import { alarmVeh } from '@/Api/mapApi.js'
+export default {
+  name: '',
+  data () {
+    return {
+      listData:[],//数据组
+    }
+  },
+  props:['cls'],
+  mounted () {
+    let _this=this;
+    _this.getDataDetail((data) =>{//获取数据
+        _this.drawLine(1,data);
+    })
+  },
+  computed:{
+    timeState(){
+      return this.$store.getters.timeState;
+    },
+  },
+  methods: {
+     // 获取数据
+    getDataDetail(callback){
+      var reg = /[a-zA-Z]/g,carid = ''; // 去掉车辆id中的字母
+      carid = this.$store.state.hisZoom.info[0].vehicleid.replace(reg,"");
+      let para = {
+        carId:carid,
+        type:this.$store.getters.timeState
+      }
+      alarmVeh(para).then((res) =>{
+        this.listData = res.data.data;
+        if(callback) callback(this.listData)
+      })
+    },
+
+
+    drawLine(timeState,listData) {
+      let chartData='', _this=this,itemType = [],itemNum = [];//声明报警类型组、报警次数组
+      listData.value.forEach((item,index) =>{
+        itemType.push(item.name);
+        itemNum.push(item.num);
+      });
+      switch (+timeState) {
+        //年
+        case 1:{
+          chartData = (function(){
+                      var res = [];
+                      listData.value.forEach((item,index) =>{
+                        res.push({
+                                 name:item.name,
+                                 value:item.num
+                             });
+                      });
+                      return res;
+            })();
+          _this.chartInit(chartData);
+          break;
+        }
+        //月
+        case 2:{
+          _this.numberData.EnclosureValue = 121;
+          _this.numberData.fortificationValue = 250;
+          _this.numberData.stopValue = 170;
+          _this.numberData.LowPointValue = 310;
+          _this.numberData.overtimeValue = 90;
+          _this.numberData.policeValue = 112;
+          _this.numberData.remainValue = 160;
+          _this.numberData.Allcont = 1213;
+          chartData = [
+            {
+              value:121,
+              name:'电子围栏'
+            },
+            {
+              value:250,
+              name:'原地设防'
+            },
+            {
+              value:170,
+              name:'偏离长停点'
+            },
+            {
+              value:310,
+              name:'设备低电'
+            },
+            {
+              value:90,
+              name:'停车超时'
+            },
+            {
+              value:112,
+              name:'设备状态报警'
+            },
+            {
+              value:160,
+              name:'风险点停留超时'
+            }
+          ];
+          _this.chartInit(chartData);
+          break;
+        }
+        //日
+        case 3:{
+          _this.numberData.EnclosureValue = 5;
+          _this.numberData.fortificationValue = 6;
+          _this.numberData.stopValue = 12;
+          _this.numberData.LowPointValue = 20;
+          _this.numberData.overtimeValue = 30;
+          _this.numberData.policeValue = 11;
+          _this.numberData.remainValue = 4;
+          _this.numberData.Allcont = 88;
+          chartData = [
+            {
+              value:5,
+              name:'电子围栏'
+            },
+            {
+              value:6,
+              name:'原地设防'
+            },
+            {
+              value:12,
+              name:'偏离长停点'
+            },
+            {
+              value:20,
+              name:'设备低电'
+            },
+            {
+              value:30,
+              name:'停车超时'
+            },
+            {
+              value:11,
+              name:'设备状态报警'
+            },
+            {
+              value:4,
+              name:'风险点停留超时'
+            }
+          ];
+          _this.chartInit(chartData);
+          break;
+        }
+      }
+    },
+    chartInit(chartData){
+      let _this=this;
+      // 基于准备好的dom，初始化echarts实例
+      let chartDiv = document.querySelector("#alarmChart");
+      //自适应宽高
+      let myChartContainer = function () {
+        chartDiv.style.width = $("#carPoliceBox").width() - $("#carPoliceBox").width()*0.3 +'px';
+        chartDiv.style.height = $("#carPoliceBox").height() +'px';
+      };
+      myChartContainer();
+      let alarmChart = _this.$echarts.init(document.getElementById('alarmChart'));
+      let chartType='alarm';
+      alarmChart.setOption({
+        tooltip : {
+          trigger: 'item',
+          formatter: "{a} <br/>{b} : {c}次 ({d}%)"
+        },
+        toolbox: {
+          show : false
+        },
+        calculable : true,
+        color:['#1e9bfe','#00507c','#0074b4','#80b1d5','#a7cfe3','#43aacd','#0080a6'],
+        series : [
+          {
+            name:'车辆报警',
+            type:'pie',
+            radius : '55%',
+            center: ['50%', '60%'],
+            data:chartData
+          }
+        ]
+      });
+      //浏览器大小改变时重置大小
+      window.addEventListener("resize", function () {
+        myChartContainer();
+        alarmChart.resize();
+      });
+    }
+  },
+  watch:{
+    timeState:function (newVal, oldVal) {
+      this.getDataDetail((data)=>{//获取数据
+         this.drawLine(newVal,data);
+      });
+    },
+  },
+}
+</script>
+

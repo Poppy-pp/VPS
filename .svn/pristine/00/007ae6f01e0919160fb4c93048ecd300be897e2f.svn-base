@@ -1,0 +1,220 @@
+<!--*
+* @description: 左侧搜索框
+* @author: wp,wqh
+* @update: 2018-05-5
+-->
+<template>
+  <section id="searchStyle">
+    <div class="seachDiv">
+      <div class="left-top"></div>
+      <div class="right-top"></div>
+      <div class="let-bottom"></div>
+      <div class="right-bottom"></div>
+      <el-dropdown>
+        <span class="el-dropdown-link">
+          <i :class="'iconfont '+cicon+' comFontSize cur'"></i>
+        </span>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item @click.native="cicon = 'icon-che1'"><i class="iconfont icon-che1"></i> 车辆</el-dropdown-item>
+          <el-dropdown-item @click.native="cicon = 'icon-ren'"><i class="iconfont icon-ren"></i> 人</el-dropdown-item>
+          <el-dropdown-item @click.native="cicon = 'icon-gps'"><i class="iconfont icon-gps"></i> 设备</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+      <el-autocomplete
+        class="seachSty"
+        v-model="searchVal"
+        :fetch-suggestions="querySearchAsync"
+        placeholder="请输入关键词"
+        @select="handleSelect"
+      ></el-autocomplete>
+      <i class="iconfont icon-fangdajing comFontSize" @click="clearSeach" :class="[seachOrClose ? closeClass : '']" id="seachOrClose" title="搜索"></i>
+      <i class="openTreeCls iconfont icon-web_xiangxiazhankai comFontSize" :class="[rotate ? rotatejiantou : rotatejiantouOriginal]" @click="openTree"></i>
+    </div>
+  </section>
+</template>
+
+
+<script>
+  import {seachList} from '@/Api/mapApi.js'
+
+  export default {
+    name: "seach",
+    data() {
+      return {
+        closeClass: 'icon-guanbib',
+        seachOrClose: false,
+        cicon:'icon-che1',
+        /*搜索框内容*/
+        searchVal: '',
+        loading: false,
+        rotate:false,
+        restaurants: [],
+        timeout:  null,
+        rotatejiantou:'rotatejiantou',
+        rotatejiantouOriginal:'rotatejiantouOriginal'
+        /*end*/
+      }
+    },
+    watch: {
+      searchVal(newState1) {
+        console.log(newState1,"输入框搜索")
+        // newState1 ? this.seachOrClose = true : this.seachOrClose = false;
+        var seachOrClose=document.getElementById('seachOrClose');
+        if(newState1){
+            this.seachOrClose = true;
+            seachOrClose.title="清空";
+        }else{
+            this.seachOrClose = false;
+            seachOrClose.title="搜索";
+        }
+        let type = 'ownername';
+        if(this.cicon == 'icon-ren') type = 'ownername';
+        if(this.cicon == 'icon-che1') type = 'name';
+        if(this.cicon == 'icon-gps') type = 'device';
+
+        console.log(this.cicon,"值")
+        this.$store.commit("update_searchVal",{sval:newState1,type:type});
+        // if(type!='device'){
+        //   this.remoteMethod(newState1);
+        // }
+        // this.remoteMethod(newState1);
+      }
+    },
+    methods: {
+      handleSelect(item) {
+        console.log(item,'选择');
+      },
+      createStateFilter(queryString) {
+        return (state) => {
+          return (state.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        };
+      },
+      querySearchAsync(queryString, cb) {
+        // var restaurants = this.restaurants;
+        // var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
+        cb([]);
+      },
+      loadAll() {
+
+      },
+      //搜索框操作
+      remoteMethod(query) {
+        if (query !== '') {
+          let params = {
+            userid: this.$store.getters.user.userid,
+            pageSize: 10000,
+            index: 0,
+            condition: query + '@-1|-1|-1@-1@-1@'
+          };
+          let _this = this;
+          seachList(params)
+            .then(function (response) {
+              let results = response.data;
+              if (!results.result.code) {
+                let newArr=[];
+                for (let item of results.data) {
+                  let obj=item;
+                  obj.value=item.name+item.ownername;
+                  newArr.push(obj)
+                }
+                console.log('new',newArr);
+                _this.loading = true;
+                setTimeout(() => {
+                  _this.loading = false;
+                  _this.options4 = newArr.filter(item => {
+                    return item.value.toLowerCase()
+                      .indexOf(query.toLowerCase()) > -1;
+                  });
+                }, 200);
+              }else {
+
+              }
+            })
+            .catch(function (error) {
+                console.log(error)
+            });
+        } else {
+          this.options4 = [];
+        }
+      },
+      handSelect(data){
+
+      },
+      clearSeach() {
+        this.searchVal = ''
+      },
+      //end
+      //点击展开树
+      openTree() {
+        let _this=this;
+        if (!_this.rotate){
+          _this.rotate=true;
+          _this.$emit('openTree', 1);
+        } else{
+          _this.rotate=false;
+          _this.$emit('openTree', 0);
+        }
+      }
+    },
+    created(){
+      this.restaurants = this.loadAll();
+    }
+  }
+</script>
+
+<style scoped>
+  .icon-che1,.icon-ren{
+    vertical-align: middle;
+  }
+  .el-dropdown {
+    margin: 0px 5px 0 9px;
+  }
+
+  .seachSty {
+    /*margin-left: 40px;*/
+    line-height: 55px;
+    display: inline-block;
+  }
+
+  .iconfont.cur {
+    color: #fff;
+/*    position: absolute;
+    left: 8px;
+    line-height: 55px;*/
+    font-size: 24px;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+
+  .icon-fangdajing {
+    color: #fff;
+    line-height: 55px;
+    font-size: 24px;
+    position: absolute;
+    line-height: 55px;
+    cursor: pointer;
+  }
+  .icon-web_xiangxiazhankai {
+    color: #fff;
+    line-height: 55px;
+    font-size: 24px;
+    position: absolute;
+    line-height: 55px;
+    margin-left: 40px;
+    cursor: pointer;
+  }
+  .icon-guanbib:before {
+    content: "\e6c2";
+  }
+</style>
+<style>
+
+  #searchStyle .el-input--medium .el-input__inner {
+    width: 230px;
+    cursor: text;
+  }
+  #searchStyle .el-input__inner::-webkit-input-placeholder{
+    color: #acacac;
+    font-size: 14px;
+  }
+</style>

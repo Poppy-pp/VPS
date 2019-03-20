@@ -1,0 +1,144 @@
+<template>
+  <section id="mileageChartComents">
+      <div id="mileageChart"></div>
+      <!-- 四边小角 -->
+      <div class="left-top"></div>
+      <div class="right-top"></div>
+      <div class="let-bottom"></div>
+      <div class="right-bottom"></div>
+  </section>
+</template>
+<script>
+import { mileAge } from '@/Api/mapApi.js'
+export default {
+  name: '',
+  data (){
+    return {
+      listData:[],
+    }
+  },
+  computed:{
+    timeState(){
+      return this.$store.getters.timeState;
+    }
+  },
+ mounted(){
+    let _this=this;
+    _this.$nextTick(function(){
+      _this.drawLine(3);
+    })
+
+    this.getDataDetail();
+  },
+  methods: {
+    // 获取数据
+    getDataDetail(){
+      // 去掉车辆id中的字母
+      var reg = /[a-zA-Z]/g,carid = ''; 
+      carid = this.$store.state.hisZoom.info[0].vehicleid.replace(reg,"");
+      let para = {
+        carId:carid,
+        type:this.$store.getters.timeState
+      }
+      mileAge(para).then((res) =>{
+        this.listData = res.data.data;
+      })
+      
+
+    },
+    drawLine(timeState) {
+      // 基于准备好的dom，初始化echarts实例
+      let chartDiv = document.querySelector("#mileageChart");
+      //自适应宽高
+      let myChartContainer = function () {
+          chartDiv.style.width = $("#mileageChartComents").width()+'px';
+          chartDiv.style.height = $("#mileageChartComents").height() +'px';
+      };
+          myChartContainer();
+      let dayMileageChart = this.$echarts.init(chartDiv);
+      let xAxisData='',seriesData='';
+      switch (+timeState) {
+        case 1:{
+          xAxisData = '今年里程';
+          seriesData = [this.listData.PERIOD,this.listData.TOTALPERIOD];
+          break;
+        }
+        case 2:{
+          xAxisData = '当月里程';
+          seriesData = [this.listData.PERIOD,this.listData.TOTALPERIOD];
+          break;
+        }
+        case 3:{
+          xAxisData = '当日里程';
+          seriesData = [this.listData.PERIOD,this.listData.TOTALPERIOD];
+          break;
+        }
+      }
+      dayMileageChart.setOption({
+        tooltip : {
+          trigger: 'axis',
+          axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+            type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+          },
+
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        legend: {
+          data:['里程公里数'],
+          textStyle:{
+            color:'#fff'
+          }
+        },
+        xAxis : [
+          {
+            type : 'category',
+            data : [xAxisData, '总里程'],
+            axisTick: {
+              alignWithLabel: true
+            },
+            axisLine: {
+              lineStyle: {
+                color: '#FFFFFF'
+              }
+            }
+          }
+        ],
+        yAxis : [
+          {
+            type : 'value',
+            axisLine: {
+              lineStyle: {
+                color: '#FFFFFF'
+              }
+            }
+          }
+        ],
+        series : [
+          {
+            name:'里程公里数',
+            type:'bar',
+            barWidth: '30%',
+            data: seriesData
+          },
+        ]
+      });
+      //浏览器大小改变时重置大小
+      window.addEventListener("resize", function () {
+          myChartContainer();
+          dayMileageChart.resize();
+      });
+    }
+  },
+  watch:{
+    timeState:function (newVal, oldVal) {
+      this.drawLine(newVal);
+    }
+  },
+}
+</script>
+

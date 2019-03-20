@@ -1,0 +1,64 @@
+<template>
+  <section id="timeAnalysis">
+    <div class="left-top" style="z-index:2"></div>
+    <div class="right-top" style="z-index:2"></div>
+    <div class="let-bottom" style="z-index:2"></div>
+    <div class="right-bottom" style="z-index:2"></div>
+    <div class="header">
+      <span>历史轨迹</span>
+    </div>
+    <div :is="mapComponent" class="hismap" :mapid="'maphis'+vehicleid" ref="hmap"></div>
+  </section>
+</template>
+
+<script>
+  import comFrameBox from '@/components/MessageBox/comFrameBox' //弹框公用头部
+  export default {
+    name: "",
+    props:['currentIndex','vehicleid'],
+    components: {
+      amap: resolve => {
+        require(['@/components/Map/amap'], resolve)
+      },
+      "com-frame-box":comFrameBox
+    },
+    computed: {
+      //初始化地图类型
+      maptype() {
+        return this.$store.getters.MAPTYPE;
+      },
+      //地图类型
+      mapComponent() {
+        return this.maptype == 0 ? 'amap' : 'bmap';
+      },
+    },
+    data() {
+      return {
+      }
+    },
+    mounted () {
+      // let _this=this;
+      // _this.$nextTick(function(){
+      //   _this.drawLine();
+      // })
+    },
+    methods: {
+      // drawLine() {
+      //   // 基于准备好的dom，初始化echarts实例
+      //   let parentDiv = document.querySelector("#timeAnalysis");
+      //   //自适应宽高
+      //   let myChartContainer = function () {
+      //     parentDiv.style.height = window.innerHeight/3.39 +'px';
+      //   };
+      //   myChartContainer();
+      //   //浏览器大小改变时重置大小
+      //   window.addEventListener("resize", function () {
+      //     myChartContainer();
+      //   });
+      // }
+    },
+    created(){
+
+    }
+  }
+</script>

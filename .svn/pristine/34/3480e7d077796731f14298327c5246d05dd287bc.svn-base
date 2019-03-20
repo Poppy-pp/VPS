@@ -1,0 +1,699 @@
+ <!--*
+* @description: 高德地图
+* @author: wp
+* @update: 2018-04-12
+-->
+<template>
+  <div :id="mapid"></div>
+</template>
+<script>
+  import Vue from 'vue'
+  import utils from '@/utils/tool'
+  export default {
+    props:["mapid"],
+    data () {
+      return {
+        map:null,                 //默认地图实例对象
+        hisMapArr:[],             //历史轨迹地图实例 集合
+        geocoder:null,            //地理编码
+        infoWindow:null,          //当前窗体工具
+        curLabel:null,            //当前label对象
+        backLabel:null,           //上一个车label
+        vehInfo:null,             //当前鼠标hover获取的 车的 信息
+
+        trafficLayer:null,        //实时路况图层实例
+        isVisibleTraffic:false,   //实时路况是否显示
+
+        MousetoolMeasure:null,    //距离测量实例
+        IsMeasure:false,          //距离测量实例
+
+        curMarkerPoint:null,
+        currentSignMarker:null,   //当前标注的点
+        signMarkerInfoWindow:null,//当前标注的点 的窗口
+        IsSign:false,             //标注是否显示
+      }
+    },
+    methods:{
+      //初始化高德地图
+      InitMap(){
+        var theme = this.$store.getters.theme,_this = this;
+        if(this.map == null && this.mapid == "mapContainer"){
+          var map = new AMap.Map(this.mapid, {
+            resizeEnable: true
+          });
+          this.$store.commit("getMapObj",map);
+          //主题控制 如果satellite卫星图 默认加载卫星图
+          if(theme == 'default'){
+            theme = 'a68e4ef956562f5634b461b6e0e4a408'
+          }
+          if(theme == 'satellite'){
+            map.add([new AMap.TileLayer.Satellite(),new AMap.TileLayer.RoadNet()]);
+          } else {
+            map.setMapStyle('amap://styles/' + theme);
+          }
+          //初始化高德地图缩放事件
+          map.on("zoomend", function (e) {
+            var level = map.getZoom();
+            _this.changeCarIconSizeToMap(level);
+          });
+          //地图点击事件
+          map.on("click", function (e) {
+            //关闭窗口 如果存在需要关闭窗体（同时显示对应 车的label）
+            // if(_this.curLabel){
+            //   /*关闭车辆信息弹窗*/
+            //   utils.closeBoxCom(_this.$store.getters);
+            //   /*end*/
+            //   _this.infoWindow.close();
+            //   _this.curLabel.fadeIn();
+            //   _this.curLabel = null;
+            //   $(".info-top span").removeClass('cur')
+            // }
+          });
+          map.on("complete",function(e){
+          });
+          //定位到当前城市
+          this.showCityInfo(map);
+          //在地图对象上 新增自定义方法
+          map.$methods = {
+            showRouteTraffic : this.showRouteTraffic,         //实时路况
+            measureLength    : this.measureLength,            //距离测量工具
+            pointSign        : this.pointSign,                //点标记
+            closeTools       : this.closeTools,               //关闭可能冲突的工具
+            getPointAddress  : this.getPointAddress,          //地址编码
+            createCarMarkerToMap : this.createCarMarkerToMap, //平滑移动
+            showDZWLCircle   : this.showDZWLCircle,           //画圆
+            showDZWLPolygon  : this.showDZWLPolygon,          //显示行政区域和多边形
+            showDZWLPolygonCacle_set  : this.showDZWLPolygonCacle_set  //清空
+          };
+          Vue.prototype.$map = this.map = map;                //申明全局默认地图实例
+          return;
+        }
+
+        //申明全局历史轨迹地图实例
+        if(this.hisMap == null && this.mapid.indexOf("maphis") != -1){
+          var map = new AMap.Map(this.mapid, {
+            resizeEnable: true
+          });
+          //主题控制 如果satellite卫星图 默认加载卫星图
+          if(theme == 'default'){
+            theme = 'a68e4ef956562f5634b461b6e0e4a408'
+          }
+
+          if(theme == 'satellite'){
+            map.add([new AMap.TileLayer.Satellite(),new AMap.TileLayer.RoadNet()]);
+          } else {
+            map.setMapStyle('amap://styles/' + theme);
+          }
+          map.on("complete",function(e){
+            // _this.$store.commit("update_c3Dloading",false);
+          });
+          var hisMapArr = [];
+          var hismap = {};
+          hismap[this.mapid] = map;
+          hisMapArr.push(hismap);
+          Vue.prototype.$hisMapArr = this.hisMapArr = hisMapArr;           //申明全局默认历史轨迹地图实例
+        }
+      },
+      //显示
+      showDZWLPolygon(paths, id) {
+          var that = this;
+          //显示
+          var polygon = new AMap.Polygon({
+              path: paths,//设置多边形边界路径
+              strokeColor: "#F33", //线颜色
+              strokeOpacity: 0.2, //线透明度
+              strokeWeight: 3,    //线宽
+              fillColor: "#ee2200", //填充色
+              fillOpacity: 0.35,//填充透明度
+              extData: { dzwlid: id }
+          });
+          polygon.setMap(that.map);
+          //缩放至
+          that.map.setBounds(polygon.getBounds());
+      },
+      //取消显示小地图
+      showDZWLPolygonCacle_set(id) {
+        if (id == "" || id == null || id == undefined) {
+            //多边形
+            var polygons = this.map.getAllOverlays("polygon");
+            for (var i = 0; i < polygons.length; i++) {
+                polygons[i].setMap(null);
+            }
+            //圆
+            var circles = this.map.getAllOverlays("circle");
+            for (var i = 0; i < circles.length; i++) {
+                circles[i].setMap(null);
+            }
+        }
+        else {
+            //多边形
+            var polygons = this.map.getAllOverlays("polygon");
+            for (var i = 0; i < polygons.length; i++) {
+                if (polygons[i].getExtData().dzwlid == id) {
+                    polygons[i].setMap(null);
+                }
+            }
+            //圆
+            var circles = this.map.getAllOverlays("circle");
+            for (var i = 0; i < circles.length; i++) {
+                if (circles[i].getExtData().dzwlid == id) {
+                    circles[i].setMap(null);
+                }
+            }
+        }
+      },
+      //画圆
+      showDZWLCircle(center, radius, id) {
+        var that = this;
+        //显示
+        var circle = new AMap.Circle({
+            center: new AMap.LngLat(center[0], center[1]),// 圆心位置
+            radius: radius, //半径
+            strokeColor: "#F33", //线颜色
+            strokeOpacity: 0.2, //线透明度
+            strokeWeight: 3, //线粗细度
+            fillColor: "#ee2200", //填充颜色
+            fillOpacity: 0.35,//填充透明度
+            extData: { dzwlid: id }
+        });
+        circle.setMap(that.map);
+        //缩放至
+        that.map.setBounds(circle.getBounds());
+      },
+      //地理编码
+      getPointAddress(point,resolve) {
+        let geocoder = this.geocoder;
+        if (geocoder == null) {
+          this.map.plugin(["AMap.Geocoder"], function () {
+              geocoder = new AMap.Geocoder({
+                  radius: 1000,
+                  extensions: "base"
+              });
+              //获取地址
+              geocoder.getAddress(point, function (status, result) {
+                  var data = "";
+                  if (status === 'complete' && result.info === 'OK') {
+                    data = result.regeocode.formattedAddress; //返回地址描述;
+                  }
+                  else {
+                    data = "获取位置信息失败";
+                  }
+                  resolve(data);
+              });
+          });
+        }
+        else {
+          //获取地址
+          geocoder.getAddress(point, function (status, result) {
+              var data = "";
+              if (status === 'complete' && result.info === 'OK') {
+                data = result.regeocode.formattedAddress; //返回地址描述;
+              }
+              else {
+                data = "获取位置信息失败";
+              }
+              resolve(data);
+          });
+        }
+      },
+      //关闭可能冲突的工具
+      closeTools(type) {
+        if(type == "measure"){
+          this.MousetoolMeasure.close(true);
+          this.IsMeasure = false;
+        }
+        if(type == "sign"){
+          this.map.setDefaultCursor("");
+          this.MousetoolSign.close(true);
+          this.IsSign = false;
+          //关闭信息窗口
+          if (this.signMarkerInfoWindow != null) {
+            this.signMarkerInfoWindow.close();
+          }
+        }
+      },
+      /************************************用户标注***************************/
+      pointSign() {
+        const map = this.map;
+        if (this.IsSign) {
+          map.setDefaultCursor("");
+          this.MousetoolSign.close(true);
+          this.IsSign = false;
+          //关闭信息窗口
+          if (this.signMarkerInfoWindow != null) {
+            this.signMarkerInfoWindow.close();
+          }
+        }
+        else {
+          if (this.MousetoolSign == null) {
+              var that = this;
+              map.setDefaultCursor("crosshair");
+              map.plugin(["AMap.MouseTool"], function () {
+                  that.MousetoolSign = new AMap.MouseTool(map);
+                  //标记框
+                  that.MousetoolSign.on("draw", function (even) {
+                      if (that.signMarkerInfoWindow == null) {
+                        that.signMarkerInfoWindow = new AMap.InfoWindow({ offset: new AMap.Pixel(0, -30),isCustom: true });
+                      }
+                      //获取点要素
+                      var marker = even.obj;
+                      marker.on('mouseover', function (e) {
+                          that.curMarkerPoint = e.target;
+                          var data = e.target.formdata;
+                          if(!data){
+                            data = {
+                              name:"新标注",
+                              remark:""
+                            }
+                          }
+                          var content = '<div class="pointwind">\
+                              <input class="inputbz" placeholder="标注名称" value="'+data.name+'"/>\
+                              <textarea class="inputbz" placeholder="备注">'+data.remark+'</textarea>\
+                            </div>';
+                          //获取当前标记点
+                          that.currentSignMarker = e.target;
+                          that.signMarkerInfoWindow.setContent(content);
+                          that.signMarkerInfoWindow.open(map, e.target.getPosition());
+                      });
+                      //动态绑定标注节点  通过不同marker实时传递数据
+                      $(document).on('change','.inputbz',function(e){
+                        var formdata = {};
+                        if($(e.target).is('input')){
+                          formdata.name = $(e.target).val();
+                          formdata.remark = $(e.target).next().val();
+                        }else{
+                          formdata.name = $(e.target).prev().val();
+                          formdata.remark = $(e.target).val();
+                        }
+                        that.curMarkerPoint.formdata = formdata;
+                      });
+
+                  });
+                  that.MousetoolSign.marker();
+                  that.IsSign = true;
+              });
+          }
+          else {
+              this.MousetoolSign.marker();
+              this.IsSign = true;
+          }
+        }
+      },
+      /************************************距离量测***************************/
+      measureLength() {
+        var _this = this,
+        map = this.map;
+        if(_this.MousetoolMeasure){
+          if (_this.IsMeasure) {
+            _this.MousetoolMeasure.close(true);
+            _this.IsMeasure = false;
+          } else {
+            _this.MousetoolMeasure.rule();
+            _this.IsMeasure = true;
+          }
+        }else{
+          map.plugin(["AMap.MouseTool"], function() {
+            var sMarker = {
+              icon: new AMap.Icon({
+                size: new AMap.Size(31, 31),
+                image: "/static/images/startPoint.png",
+                imageSize:new AMap.Size(31, 31)
+              }),
+              offset: new AMap.Pixel(-15, -31)
+            }
+            var eMarker = {
+              icon: new AMap.Icon({
+                size: new AMap.Size(31, 31),
+                image: "/static/images/endPoint.png",
+                imageSize:new AMap.Size(31, 31)
+              }),
+              offset: new AMap.Pixel(-15, -31)
+            }
+            var lOptions = {
+              strokeStyle: "solid",
+              strokeColor: "#FF33FF",
+              strokeOpacity: 1,
+              strokeWeight: 2
+            }
+            var rulerOptions = {
+              startMarkerOptions: sMarker,
+              endMarkerOptions: eMarker,
+              lineOptions: lOptions
+            }
+            _this.MousetoolMeasure = new AMap.MouseTool(map);
+            _this.MousetoolMeasure.rule(rulerOptions);
+            _this.IsMeasure = true;
+          });
+        }
+      },
+      //实时路况
+      showRouteTraffic(){
+        const map = this.map;
+        if(this.trafficLayer){
+          if(this.isVisibleTraffic) {
+            this.trafficLayer.hide();
+            this.isVisibleTraffic = false;
+          } else {
+            this.trafficLayer.show();
+            this.isVisibleTraffic = true;
+          }
+        } else {
+          //实时路况图层实例化
+          this.trafficLayer = new AMap.TileLayer.Traffic({
+              zIndex: 10,
+              map:map
+          });
+          this.isVisibleTraffic = true;
+        }
+      },
+      //获取用户所在城市信息
+      showCityInfo(map) {
+        //实例化城市查询类
+        var citysearch = new AMap.CitySearch(),
+        _this = this;
+        //自动获取用户IP，返回当前城市
+        citysearch.getLocalCity(function(status, result) {
+          if (status === 'complete' && result.info === 'OK') {
+              if (result && result.city && result.bounds) {
+                var cityinfo = result.city;
+                var citybounds = result.bounds;
+                _this.$store.commit('set_user_defaultCity',cityinfo);
+                //地图显示当前城市
+                map.setBounds(citybounds);
+              }
+          } else {
+            _this.$message({
+              message: result.info,
+              type: 'error'
+            });
+          }
+        });
+      },
+
+      //等比例缩放图标大小 适当隐藏label
+      changeCarIconSizeToMap (level) {
+        var cimgList = $("img.cIcon"),
+        clabel = $("div.vmarker-label");
+        //等比例缩放车辆图标
+        cimgList.css({
+          transform:'scale('+Math.min(level/10,1)+')'
+        });
+        //隐藏 label
+        if(level >= 10) {
+          clabel.fadeIn(100);
+        }else{
+          clabel.fadeOut(100);
+        }
+      },
+      //创建lable
+      createCarLable(data) {
+        let label = null,_this = this;
+        if (data.ownername == null || data.ownername == undefined) data.ownername = "";
+        label = document.createElement('div');
+        label.className = 'vmarker-label';
+        label.innerText = data.licenceplatenum + " " + data.ownername;
+        //创建
+        var marker_lable = new AMap.Marker({
+            map: this.map,
+            position: data.point,
+            content: label,
+            autoRotation: false,
+            topWhenClick: true,
+            offset: new AMap.Pixel(0, 20)
+        });
+        return marker_lable;
+      },
+
+      //根据车辆id 获取车辆maker和label
+      getVehMarkerToid(vehicleid){
+        let state = this.$store.getters;
+        let markers = state.carMarkerList;
+        let marker_labels = state.carlabelList;
+        let marker = null;
+        let marker_label = null;
+        for (var i = 0,len = markers.length; i < len; i++) {
+          if (markers[i].getExtData().vehicleid == vehicleid) {
+            marker = markers[i];
+            marker_label = marker_labels[i];
+            break;
+          }
+        }
+        return {marker:marker,marker_label:marker_label};
+      },
+      //车辆移动结束后 判断是否有堆积数据 如果有 继续行驶  堆积数据过大 直接 跳过去
+      moveVehEndHandle(e){
+        let m = null;
+        let Vehdata = this.$Veh.mqttRealDataQueue;
+
+        if(Vehdata.length > 5){
+          let v = Vehdata.pop();
+          let realdata = v.realdata;
+          let point = new AMap.LngLat(realdata.lng, realdata.lat);
+          m = this.getVehMarkerToid(realdata.vehicleid);
+
+          this.$mqtt.moveing = false;
+
+          //移动(类似于直接移动过去)
+          m.marker.moveTo(point, 12000000);
+          m.marker_label.moveTo(point, 12000000);
+
+          this.$Veh.mqttRealDataQueue = [];
+          setTimeout(()=>{
+            this.$mqtt.moveing = true;
+          },10);
+          return
+        }
+        //平滑移动一个
+        if(Vehdata.length > 0){
+          let v = Vehdata.shift();
+          let realdata = v.realdata;
+          let point = new AMap.LngLat(realdata.lng, realdata.lat);
+
+          m = this.getVehMarkerToid(realdata.vehicleid);
+         //判断移动过去还是直接定位过去
+          var distance = m.marker.getPosition().distance(point);
+          if (distance > 500) {
+            //移动(类似于直接移动过去)
+            m.marker.moveTo(point, 12000000);
+            m.marker_label.moveTo(point, 12000000);
+          } else {
+            //移动
+            // m.marker.setAngle(get2PointAngle(m.marker.getPosition().lng, m.marker.getPosition().lat,point.lng,point.lat));
+            m.marker.moveTo(point, 120);
+            m.marker_label.moveTo(point, 120);
+          }
+          this.$mqtt.moveing = false;
+          setTimeout(()=>{
+            this.$mqtt.moveing = true;
+          },120);
+        }
+      },
+      //地图上添加自定义标注车
+      createMarkerCar(data) {
+        let _this = this,
+        marker = null,
+        marker_label = null,
+        basicdata = data.basicdata || {},
+        realdata = data.realdata,
+        lng = null,lat = null;
+        if(!realdata) return;
+        lng = realdata.lng || 0,
+        lat = realdata.lat || 0;
+
+        //实例化车辆marker
+        marker = new AMap.Marker({
+            map: this.map,
+            title: basicdata.carno + ' ' + basicdata.ownername,
+            angle:realdata.direct,
+            autoRotation: true,
+            topWhenClick: true,
+            offset: new AMap.Pixel(-22.5, -23),//这里就是
+            position: [lng, lat],
+        });
+
+        //创建车辆图标
+        var cImg = document.createElement("img");
+        cImg.className = "cIcon";
+        cImg.style.width = "45px";
+        cImg.style.height = "46px";
+        cImg.src = utils.getMapCarStateSrc(realdata.istate);
+        marker.setContent(cImg);
+
+        //设置自定义label
+        var dt = {
+          vehicleid: basicdata.vehicleid,
+          licenceplatenum: basicdata.carno,
+          ownername: basicdata.ownername,
+          point: [realdata.lng, realdata.lat]
+        };
+        marker_label = this.createCarLable(dt);
+
+        //使用自定义窗体
+        this.infoWindow = new AMap.InfoWindow({
+            isCustom: true,//是否使用自定义窗体dom结构
+            content:_this.createInfoWindow(),
+            offset: new AMap.Pixel(28, -42)
+        });
+
+        //设置车辆标注 自定义属性 数据
+        marker.setExtData({ name:basicdata.ownername,licenceplatenum:basicdata.carno,vehicleid:basicdata.vehicleid,isHidden:true });
+
+        //鼠标移入marker弹出自定义的信息窗体
+        marker.on('mouseover', function(e) {
+          if(!e.pixel) return;
+          _this.vehInfo = this.getExtData();
+          _this.infoWindow.close();
+          _this.infoWindow.open(_this.$map, this.getPosition());
+          //记录当前对应车点的label dom
+          if(_this.backLabel){
+             _this.backLabel.fadeIn();
+             _this.backLabel = null;
+          }
+          _this.curLabel = $(e.target.D.M.ea).next();
+          _this.curLabel.fadeOut();
+          _this.$store.commit('updateCarInfo',data);
+        });
+
+        //鼠标离开marker 记录离开的makerlabel dom元素
+        marker.on('mouseout', function(e) {
+          _this.backLabel = $(e.target.D.M.ea).next();
+        });
+        //车辆maker移动结束后时间
+        marker.on('moveend',this.moveVehEndHandle);
+        //事件(改变状态)
+        marker.on('moving', function (e) {
+          _this.infoWindow.setPosition(this.getPosition()); //实时改变功能按钮弹窗位置
+        });
+
+
+        //记录地图的marker 和 对应的label
+        this.$store.commit('add_carMarker',{marker:marker,marker_label:marker_label});
+      },
+      //创建自定义窗体
+      createInfoWindow() {
+        var cwind = document.createElement("div");
+        cwind.className = "markerInfo";
+
+        var divul = document.createElement("div");
+        divul.className = "info-top";
+        var dashed = document.createElement("div");
+        dashed.className = "dashed";
+        //创建 功能按钮
+        var ydsf = document.createElement("span"),
+        lsgj = document.createElement("span"),
+        genzong = document.createElement("span"),
+        zhiling = document.createElement("span"),
+        dzwk = document.createElement("span"),
+        shuaxin = document.createElement("span");
+
+        //属性绑定
+        ydsf.className = "ydsf iconfont icon-anquan";
+        lsgj.className = "lsgj iconfont icon-guijihuifang";
+        genzong.className = "genzong iconfont icon-guanzhu";
+        zhiling.className = "zhiling iconfont icon-qizi_icon";
+        dzwk.className = "dzwk iconfont icon-dianziweilan";
+        shuaxin.className = "shuaxin iconfont icon-shuaxin"
+        
+        // 添加title属性
+        shuaxin.title = "刷新"
+        ydsf.title = "原地设防";
+        lsgj.title = "历史轨迹";
+        genzong.title = "关注";
+        zhiling.title = "指令";
+        dzwk.title = "电子围栏";
+
+        // 点击事件注册
+        shuaxin.onclick = this.refreshBox;
+        // ydsf.onclick = this.FortInSituHandle;
+        // lsgj.onclick = this.HistoricalTrackHandle;
+        // genzong.onclick = this.TrackHandle;
+        // zhiling.onclick = this.instructionsHandle;
+        // dzwk.onclick = this.ElectronicFenceHandle;
+
+        $(document).off("click",".markerInfo span.iconfont").on("click",".markerInfo span.iconfont",this.handType);
+        divul.appendChild(ydsf);    //原地设防
+        divul.appendChild(lsgj);    //历史记录
+        divul.appendChild(genzong); //关注
+        divul.appendChild(zhiling); //指令
+        divul.appendChild(dzwk);    //电子围栏
+        divul.appendChild(shuaxin); //刷新
+
+        cwind.appendChild(divul);
+        cwind.appendChild(dashed);
+
+        return cwind;
+
+      },
+      refreshBox(){
+        //  var id=this.vehInfo.vehicleid;
+        //  console.log(id);
+        //  this.$store.dispatch("zoomToCarByCarId", {
+        //   carId: id,
+        //   _this: this
+        // });
+      },
+      //地图主题样式刷新 satellite是卫星图
+      mapThemeRefresh(enName) {
+        if(enName == 'satellite'){
+          this.$map.add([new AMap.TileLayer.Satellite(),new AMap.TileLayer.RoadNet()]);
+        } else {
+          this.$map.setLayers([new AMap.TileLayer()]);
+          this.$map.setMapStyle('amap://styles/'+enName);
+        }
+      },
+      //车辆弹框事件调用
+      handType(e){
+        let $class = e.target.classList.item(0);
+        $(e.target).
+        addClass("cur").
+        siblings().
+        removeClass("cur");
+        if ($class !== 'lsgj'){
+          this.$store.commit('carBoxOpenOrClose',{openState:true,$class:$class});
+        }else{
+          console.log(this.vehInfo)
+          this.$store.commit("update_hisZoom",this.vehInfo);                            //历史轨迹窗口创建
+        }
+        // this.$store.commit('UpdateThumbnailReplace',false);                          //打开历史轨迹清除代替滚动
+        // this.$store.commit('UpdateaddtransitionRight02',false);                      //代替滚动动画class关闭
+      },
+      // //每个点的左键点击事件
+      // _onMakerClick(makr){
+      //   makr.target.moveAlong(this.lineArr, 500);
+      // },
+      // //绘制路径
+      // polyline(){
+      //   var lngX = 116.397428, latY = 39.90923;
+      //   this.lineArr.push([lngX, latY]);
+      //   for (var i = 1; i < 4; i++) {
+      //       lngX = lngX + Math.random() * 0.05;
+      //       if (i % 2) {
+      //           latY = latY + Math.random() * 0.0001;
+      //       } else {
+      //           latY = latY + Math.random() * 0.06;
+      //       }
+      //       this.lineArr.push([lngX, latY]);
+      //   }
+      //   var polyline = new AMap.Polyline({
+      //     map: this.$map,
+      //     path: this.lineArr,
+      //     strokeColor: "#00A",  //线颜色
+      //     strokeWeight: 3,      //线宽
+      //   });
+      // },
+      // //点移动事件
+      // _onMakerMoving(e){
+      //   let passedPath = e.passedPath,
+      //   passedPolyline = new AMap.Polyline({
+      //       map: this.$map,
+      //       strokeColor: "#F00",  //线颜色
+      //       strokeWeight: 3,      //线宽
+      //   });
+      //   passedPolyline.setPath(passedPath);
+      // }
+    },
+    mounted(){
+      this.InitMap();
+    }
+  }
+</script>

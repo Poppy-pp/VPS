@@ -1,0 +1,190 @@
+ /*
+ * @description: vps地图首页请求
+ * @author: wp
+ * @update: wp (2018-04-04)
+ */
+import axios from 'axios';
+import Qs from 'qs';
+
+var gisapiservice = '/gisapiservice';
+var api = '/api';
+var vehicle  = '/vehicle';
+
+//搜索框搜索
+export const seachList = params => {
+  return axios.post(`${gisapiservice}/Vehicle/queryvehicle`, params);
+};
+//地图左侧列表树
+export const getList = params => {
+  return axios.post(`${gisapiservice}/Corp/corpdetail`, params);
+};
+//列表树子节点标签信息加载
+export const getChildrenTag = params => {
+  return axios.post(`${gisapiservice}/Tag/gettag`, params);
+};
+//列表树子节点车辆信息加载
+export const getChildrenCar = params => {
+  return axios.post(`${gisapiservice}/Tag/getvehicle`, params);
+};
+//根据车辆id获取备注信息
+export const vehicleremarks = params => {
+  return  axios.post(`${api}/remark/vehicleremarks`,params);
+};
+ //获取车辆详情
+export const vehicledetail = params => {
+  return axios.post(`${gisapiservice}/Vehicle/vehicledetail`,params);
+};
+//根据车辆id查询对应的电子围栏
+export const searchVEbyvehicleid = params => {
+  return axios.post(`${api}/dzwl/searchVEbyvehicleid`,params);
+};
+//根据车辆id获取所有关注
+export const followinfobyid = params => {
+  return axios.post(`${api}/follow/followinfobyid`,params);
+};
+//跟据车辆id查找对应原地设防信息
+export const getydsfbyvehicleid = params => {
+  return axios.post(`${api}/ydsf/getydsfbyvehicleid`,params);
+};
+
+//根据车辆id和设备id获取设备信息
+export const getvehicletotaldistance = params => {
+  return axios.post(`${api}/vehicledistance/getvehicletotaldistance`,params);
+};
+//根据车辆id获取车辆监控列表详情
+export const monitorlsitDetailsAxios = params => {
+  return axios.post(`${gisapiservice}/Vehicle/vehicledetail`,Qs.stringify(params));
+};
+//获取报警类型
+export const policeType = params => {
+  return axios.post(`${api}/alarm/alarmparms`,params);
+};
+//获取指定用户的所有车
+export const getvehiclessimple = params => {
+  return axios.post(`${api}/basicdatainfo/getvehiclessimple`,params);
+};
+//获取指定用户的车
+export const getalltags = params => {
+  return axios.post(`${api}/basicdatainfo/getalltags`,params);
+};
+//获取服务器当前时间
+export const currentServerTime = params => {
+  return axios.post(`${api}/serverinfo/servertime`,params);
+};
+/********原地设防**********************start*/
+
+//获取是否原地设防 信息
+export const getYdsfInfo = params => {
+  return axios.post(`${api}/ydsf/getydsfbyvehicleid`,params);
+};
+
+//增加原地设防
+export const addYdsf = params => {
+  return axios.post(`${api}/ydsf/addydsf`,params);
+};
+//修改原地设防
+export const updateYdsf = params => {
+  return axios.post(`${api}/ydsf/updateydsf`,params);
+};
+//删除原地设防
+export const delYdsf = params => {
+  return axios.post(`${api}/ydsf/deleteefencebyvehicleid`,params);
+};
+/********原地设防**********************end*/
+
+
+/********历史轨迹**********************start*/
+
+//获取所有车辆历史GPS位置
+export const gethistorybyvehicleidandprodnum = params => {
+  return axios.post(`${api}/vehiclesb/gethistorybyvehicleidandprodnum`,params);
+};
+
+
+/********历史轨迹**********************end*/
+
+/********设备指令**********************start*/
+
+//获取所有设备指令
+export const getInstructions = params => {
+  return axios.post(`${api}/order/orders`,params);
+};
+
+//发送指令接口
+export const sendInstructions = params => {
+  return axios.post(`${gisapiservice}/Prod/sendcommand`,params);
+};
+/********设备指令**********************end*/
+
+/********关注信息**********************start*/
+
+//获取全部关注类型
+export const getFollow = params => {
+  return axios.post(`${api}/followgroup/getfollowgroups`,params);
+};
+//获取关注数据
+export const queryfollowdata = params => {
+  return axios.post(`${api}/follow/queryfollowdata`,params);
+};
+//获取已关注类型
+export const getAlreadyFollow = params => {
+  return axios.post(`${api}/follow/followinfobyid`,params);
+};
+//确认关注
+export const confirmFollow = params => {
+  return axios.post(`${api}/follow/followvehicle`,Qs.stringify(params));
+};
+/********关注信息**********************end*/
+
+//获取电子围栏
+export const searchefence = params => {
+  return axios.post(`${api}/dzwl/searchefence`,params);
+};
+/********电子围栏**********************end*/
+
+
+//获取指定车辆的状态
+export const getvehiclesstatus = params => {
+  return axios.post(`${gisapiservice}/Vehicle/getvehiclesstatus`,params);
+};
+/********车辆状态**********************end*/
+
+
+//获取指定设备详情
+export const proddetail = params => {
+  return axios.post(`${gisapiservice}/Prod/proddetail`,params);
+};
+/********车辆状态**********************end*/
+
+//获取所有车辆基础数据数量
+export const vehiclesCount = params => {  // 需要传用户的id
+  return axios.post(`${api}/basicdatainfo/getvehiclessimplecount`,params);
+};
+/********车辆数量**********************end*/
+
+
+/********数据图表**********************start*/
+//里程公里数
+export const mileAge = params => {
+  return axios.get(`${vehicle}/data/findGross`, {params: params});
+};
+//平均速度
+export const speedAvg = params => {
+  return axios.get(`${vehicle}/data/findVeo`,{params: params});
+};
+//车辆报警
+export const alarmVeh = params => {
+  return axios.get(`${vehicle}/findAlarm`,{params: params});
+};
+//历史轨迹
+export const historyDraw = params => {
+  return axios.get(`${vehicle}/data/findHistory`,{params: params});
+};
+//停车时长
+export const parkingLength = params => {
+  return axios.get(`${vehicle}/data/findStop`,{params: params});
+};
+
+/********数据图表**********************end*/
+
+

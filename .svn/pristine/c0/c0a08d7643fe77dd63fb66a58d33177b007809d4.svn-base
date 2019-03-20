@@ -1,0 +1,157 @@
+<template>
+    <section id="lsPolice">
+      <i class="iconfont icon-fangdajing comFontSize"></i>
+        <div class="headOperation">
+          <el-input v-model="search" placeholder="请输入关键字"></el-input>
+        </div>
+
+        <div class="policeTab">
+          <el-table
+            :data="tableData"
+            style="width: 100%">
+            <el-table-column
+              fixed
+              prop="carno"
+              label="车牌号"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="policeType"
+              label="报警类型"
+              width="200"
+              >
+            </el-table-column>
+            <el-table-column
+              prop="policeInfo"
+              label="报警信息"
+              width="200"
+            >
+            </el-table-column>
+            <el-table-column
+              prop="policeNum"
+              label="报警次数"
+              width="80"
+            >
+            </el-table-column>
+            <el-table-column
+              prop="GPSTime"
+              label="通讯时间"
+              width="200"
+            >
+            </el-table-column>
+            <el-table-column
+              prop="serverTime"
+              label="服务器时间"
+              width="200"
+            >
+            </el-table-column>
+            <el-table-column
+              prop="speed"
+              label="速度(km/h)"
+              width="110"
+            >
+            </el-table-column>
+            <el-table-column
+              prop="equipmentNo"
+              label="设备号码"
+              width="200"
+            >
+            </el-table-column>
+            <el-table-column
+              prop="carframe"
+              label="车架号"
+              width="200"
+            >
+            </el-table-column>
+            <el-table-column
+              prop="address"
+              label="详细地址"
+              width="250"
+            >
+            </el-table-column>
+          </el-table>
+        </div>
+    </section>
+</template>
+
+<script>
+    export default {
+      name: '',
+      components: {},
+      props: [],
+      data () {
+        return {
+          search: '', // 搜索内容
+          tableData: [
+            {
+              carno: '底542083/曙光汽车',
+              policeType: '原地设防检测报警',
+              policeInfo: '超出原地设防距离10578米',
+              policeNum: '100',
+              GPSTime: '2018-06-12 15:40:39',
+              serverTime: '2018-06-12 15:40:39',
+              speed: '120',
+              equipmentNo: '868120168219647',
+              carframe: 'LFV2A1BSXH4542083',
+              address: '四川省成都市锦江区成龙路街道海桐一期'
+            },
+            {
+              carno: '底542083/曙光汽车',
+              policeType: '原地设防检测报警',
+              policeInfo: '超出原地设防距离10578米',
+              policeNum: '100',
+              GPSTime: '2018-06-12 15:40:39',
+              serverTime: '2018-06-12 15:40:39',
+              speed: '120',
+              equipmentNo: '868120168219647',
+              carframe: 'LFV2A1BSXH4542083',
+              address: '四川省成都市锦江区成龙路街道海桐一期'
+            },
+            {
+              carno: '底542083/曙光汽车',
+              policeType: '原地设防检测报警',
+              policeInfo: '超出原地设防距离10578米',
+              policeNum: '100',
+              GPSTime: '2018-06-12 15:40:39',
+              serverTime: '2018-06-12 15:40:39',
+              speed: '120',
+              equipmentNo: '868120168219647',
+              carframe: 'LFV2A1BSXH4542083',
+              address: '四川省成都市锦江区成龙路街道海桐一期'
+            },
+            {
+              carno: '底542083/曙光汽车',
+              policeType: '原地设防检测报警',
+              policeInfo: '超出原地设防距离10578米',
+              policeNum: '100',
+              GPSTime: '2018-06-12 15:40:39',
+              serverTime: '2018-06-12 15:40:39',
+              speed: '120',
+              equipmentNo: '868120168219647',
+              carframe: 'LFV2A1BSXH4542083',
+              address: '四川省成都市锦江区成龙路街道海桐一期'
+            },
+            {
+              carno: '底542083/曙光汽车',
+              policeType: '原地设防检测报警',
+              policeInfo: '超出原地设防距离10578米',
+              policeNum: '100',
+              GPSTime: '2018-06-12 15:40:39',
+              serverTime: '2018-06-12 15:40:39',
+              speed: '120',
+              equipmentNo: '868120168219647',
+              carframe: 'LFV2A1BSXH4542083',
+              address: '四川省成都市锦江区成龙路街道海桐一期'
+            }
+          ]
+        }
+      },
+      mounted () {
+
+      },
+      methods: {},
+      filters: {},
+      watch: {}
+
+    }
+</script>

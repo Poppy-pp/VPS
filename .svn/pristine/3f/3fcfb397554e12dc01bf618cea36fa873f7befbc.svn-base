@@ -1,0 +1,385 @@
+<!--*
+* @description: 工具栏维护
+* @author: wp
+* @update: 2018-05-5
+-->
+<template>
+  <section id="signTool" @click.stop="closeFrame">
+    <div class="toolbar transitionWidth" :class="[rightjiantou ? 'widening' : '']">
+      <div class="left-top"></div>
+      <div class="right-top"></div>
+      <div class="let-bottom"></div>
+      <div class="right-bottom"></div>
+
+      <span @click="opendAndshrink" :class="[rightjiantou ? 'rotatejiantou' : 'rotatejiantouOriginal']" class="opendAndshrink iconfont icon-web_xiangzuozhankai"></span>
+      <div class="slideBar">
+        <div class="styCom" style="margin-top: -1px;">
+          <el-col :span="12">
+            <span class="el-dropdown-link " v-popover:popover>
+              <span class="screenData adbut" v-text="selectCity" :title="selectCity">成都</span>
+              <i class="iconfont icon-tri_down2"></i>
+            </span>
+            <el-popover
+              placement="bottom"
+              title=""
+              width="300"
+              ref="popover"
+              trigger="click">
+              <div class="hotCities">
+                <h3>热点城市</h3>
+                <div class="hotbut mt15 ml15">
+                  <span class="mr5" @click="hotCityChange('成都市',$event)">成都市</span>
+                  <span class="mr5" @click="hotCityChange('四川省',$event)">四川省</span>
+                  <span class="mr5" @click="hotCityChange('上海市',$event)">上海市</span>
+                  <span class="mr5" @click="hotCityChange('杭州市',$event)">杭州市</span>
+                  <span @click="hotCityChange('绵阳市',$event)">绵阳市</span>
+                </div>
+              </div>
+              <div class="mt10">
+                <el-select v-model="province" filterable clearable @visible-change="initProvince" loading-text="加载中..." :loading="provinceLoading" value-key="adcode" placeholder="请选择省" @change="provinceChange">
+                    <el-option
+                      v-for="item in provinceList"
+                      :key="item.properties.name"
+                      :label="item.properties.name"
+                      :value="item.properties">
+                    </el-option>
+                  </el-select>
+                  <el-select v-model="city" value-key="adcode" filterable clearable placeholder="请选择市/区" @change="cityChange">
+                    <el-option
+                      v-for="item in cityList"
+                      :key="item.properties.name"
+                      :label="item.properties.name"
+                      :value="item.properties">
+                    </el-option>
+                  </el-select>
+                  <el-select v-model="area" filterable clearable value-key="adcode" placeholder="请选择区/县" @change="areaChange">
+                    <el-option
+                      v-for="item in areaList"
+                      :key="item.properties.name"
+                      :label="item.properties.name"
+                      :value="item.properties">
+                    </el-option>
+                </el-select>
+                </div>
+            </el-popover>
+          </el-col>
+        </div>
+        <span class="styCom iconfont icon-tool-cabinet_icon toolBox" @click.stop="openTool($event)">工具</span>
+        <span :class="trafficClass" @click.stop="showRouteTraffic">路况</span>
+        <!--<span class="styCom iconfont icon-icon_jizhunlishuaiweihu" @click.stop="$router.push('/Frequent')"> 数据</span>-->
+        <span class="styCom iconfont icon-icon_jizhunlishuaiweihu" @click="openUrl"> 数据</span>
+        <span class="styCom iconfont icon-fangda" :class="[tuichuquanping ?'icon-tuichuquanping':'']"
+              @click.stop="requestFullScreen">全屏</span>
+      </div>
+    </div>
+    <div class="toolContent" v-show="toolContent">
+      <div class="left-top"></div>
+      <div class="right-top"></div>
+      <div class="let-bottom"></div>
+      <div class="right-bottom"></div>
+      <p :class="measureClass" @click.stop="measureLength">测距</p>
+      <p :class="signClass" @click.stop="pointSign">标注</p>
+    </div>
+  </section>
+</template>
+<script>
+  export default {
+    name: "signTool",
+    computed: {
+      //动态改变 城市切换
+      selectCity() {
+        return this.$store.getters.city;
+      },
+      //实时路况展示添加class
+      trafficClass(){
+        return this.isVisibleTraffic ? 'styCom iconfont icon-jiaotong on' : 'styCom iconfont icon-jiaotong';
+      },
+      //距离测量展示添加class
+      measureClass(){
+        return this.IsMeasure ? 'iconfont icon-ruler on' : 'iconfont icon-ruler';
+      },
+      //标注展示添加class
+      signClass(){
+        return this.IsSign ? 'iconfont icon-huodongqizhibiaoji on' : 'iconfont icon-huodongqizhibiaoji';
+      }
+    },
+    data() {
+      return {
+        /*左右展开菜单*/
+        rightjiantou:false,
+        /*end*/
+        /*工具栏内容*/
+        toolContent:false,
+        /*end*/
+        /*全屏图片切换*/
+        tuichuquanping: false,
+        /*end*/
+        /* 地区切换 start*/
+        provinceLoading:false,
+        province:null,
+        area:null,
+        city:null,
+        provinceList:[],
+        areaList:[],
+        cityList:[],
+        /* 地区切换 end*/
+
+        currentAreaNode:null,   //当前聚焦的区域
+        districtExplorer:null,  //行政区实例
+
+        IsSign:false,           //是否点标记
+        IsMeasure:false,        //是否点击距离测量
+        isVisibleTraffic:false  //是否显示实时路况
+      }
+    },
+
+    mounted() {
+      /*按ESC键退出全屏监听*/
+      let _this = this;
+      document.addEventListener("webkitfullscreenchange", function(e) {
+        if (!document.webkitIsFullScreen) {
+          _this.tuichuquanping = false;
+        }
+      });
+    },
+    methods: {
+      //跳转到BI
+      openUrl(){
+        window.open("//139.219.98.197:9004/");
+      },
+      //全局关闭弹框
+      closeFrame(){
+        this.toolContent = false;
+      },
+      //实时路况
+      showRouteTraffic(){
+        this.isVisibleTraffic = this.isVisibleTraffic ? false : true;
+        this.$map.$methods.showRouteTraffic();
+      },
+      //距离测量
+      measureLength(){
+        this.IsMeasure = this.IsMeasure ? false : true;
+        if(this.IsSign){
+          this.$map.$methods.closeTools('sign');
+          this.IsSign = false;
+        }
+        this.$map.$methods.measureLength();
+      },
+      //点标记
+      pointSign(){
+        this.IsSign = this.IsSign ? false : true;
+        if(this.IsMeasure){
+          this.$map.$methods.closeTools('measure');
+          this.IsMeasure = false;
+        }
+        this.$map.$methods.pointSign();
+      },
+      //热门城市切换
+      hotCityChange(cityname,e){
+        const loading = this.$loading({
+          lock: true,
+          text: '拼命切换中...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.1)'
+        });
+        $(e.target).addClass("cur").
+        siblings().
+        removeClass('cur');
+        this.$store.commit('set_user_defaultCity',cityname);
+        //根据用户选择的城市 区 县  切换到 对应城市
+        this.$map.setCity(cityname,function(){
+          loading.close();
+        });
+      },
+      //清空行政区域选择列表
+      clearAreaSelect(){
+        this.cityList == [];
+        this.city = null;
+        this.areaList == [];
+        this.area = null;
+        this.province = null;
+        this.provinceList = [];
+      },
+      //初始化省
+      initProvince(t){
+        var _this = this;
+        if(t && !_this.districtExplorer){
+          //加载行政区实例
+          _this.provinceLoading = true;
+          AMapUI.loadUI(['geo/DistrictExplorer'], function(DistrictExplorer) {
+            //创建一个实例
+            _this.districtExplorer = new DistrictExplorer({
+                map: _this.$map
+            });
+            //初始化全国地区
+            _this.switch2AreaNode(100000,function(){
+              _this.provinceLoading = false;
+            });
+          });
+        }
+      },
+      //省市切换
+      provinceChange(v){
+        this.cityList = [];
+        this.city = null;
+        this.areaList = [];
+        this.area = null;
+        if(!v) return;
+        const loading = this.$loading({
+          lock: true,
+          text: '拼命切换中...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.1)'
+        });
+        this.$store.commit('set_user_defaultCity',v.name);
+        this.$map.setCity(v.name,function(){
+          loading.close();
+        });    //根据用户选择的城市 区 县  切换到 对应城市
+        this.switch2AreaNode(v.adcode);
+      },
+      //城市切换
+      cityChange(v){
+        this.areaList = [];
+        this.area = null;
+        if(v){
+          const loading = this.$loading({
+            lock: true,
+            text: '拼命切换中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.1)'
+          });
+          this.$store.commit('set_user_defaultCity',v.name);
+          this.$map.setCity(v.name,function(){
+            loading.close();
+          });
+          if(v.level != "district"){
+            this.switch2AreaNode(v.adcode);
+          }
+        }else{
+          const loading = this.$loading({
+            lock: true,
+            text: '拼命切换中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.1)'
+          });
+          this.$store.commit('set_user_defaultCity',this.province.name);
+          this.$map.setCity(this.province.name,function(){
+            loading.close();
+          });
+        }
+      },
+      //区域切换
+      areaChange(v){
+        if(v){
+          const loading = this.$loading({
+            lock: true,
+            text: '拼命切换中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.1)'
+          });
+          this.$store.commit('set_user_defaultCity',v.name);
+          this.$map.setCity(v.name,function(){
+            loading.close();
+          });
+        }else{
+          const loading = this.$loading({
+            lock: true,
+            text: '拼命切换中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.1)'
+          });
+          this.$store.commit('set_user_defaultCity',this.city.name);
+          this.$map.setCity(this.city.name,function(){
+            loading.close();
+          });
+        }
+      },
+      //切换区域
+      switch2AreaNode(adcode,callback) {
+        var _this = this;
+        this.districtExplorer.loadAreaNode(adcode, function(error, areaNode) {
+            if (error) {
+                console.error(error);
+                return;
+            }
+            var props = areaNode.getProps(),
+            subFeatures = areaNode.getSubFeatures();
+            if(props.level == 'country' && _this.provinceList.length == 0) {
+              _this.provinceList = subFeatures;
+            }
+            if(props.level == 'province') {
+              _this.cityList = subFeatures;
+            }
+            if(props.level == 'city') {
+              _this.areaList = subFeatures;
+            }
+            if(callback) {
+              callback();
+            }
+        });
+      },
+
+      //展开右上角
+      opendAndshrink() {
+        let _this=this;
+        if (!_this.rightjiantou){
+          _this.rightjiantou=true;
+        } else{
+          _this.rightjiantou=false;
+        }
+      },
+      //展开工具内容
+      openTool(){
+        this.toolContent = this.toolContent ? false : true;
+      },
+      //全屏
+      fullScreen() {
+        // 判断各种浏览器，找到正确的方法
+        let element = window.document.documentElement;
+        let requestMethod = element.requestFullScreen || //W3C
+          element.webkitRequestFullScreen || //Chrome等
+          element.mozRequestFullScreen || //FireFox
+          element.msRequestFullScreen; //IE11
+        if (requestMethod) {
+          requestMethod.call(element);
+        }
+        else if (typeof window.ActiveXObject !== "undefined") {//for Internet Explorer
+          let wscript = new ActiveXObject("WScript.Shell");
+          if (wscript !== null) {
+            wscript.SendKeys("{F11}");
+          }
+        }
+      },
+      //退出全屏
+      exitFull() {
+        // 判断各种浏览器，找到正确的方法
+        let exitMethod = document.exitFullscreen || //W3C
+          document.mozCancelFullScreen || //Chrome等
+          document.webkitExitFullscreen || //FireFox
+          document.webkitExitFullscreen; //IE11
+        if (exitMethod) {
+          exitMethod.call(document);
+        }
+        else if (typeof window.ActiveXObject !== "undefined") {//for Internet Explorer
+          let wscript = new ActiveXObject("WScript.Shell");
+          if (wscript !== null) {
+            wscript.SendKeys("{F11}");
+          }
+        }
+      },
+      //全屏
+      requestFullScreen() {
+        const _this = this;
+        let tuichuquanping = !_this.tuichuquanping;
+        if (tuichuquanping) {
+          _this.fullScreen();
+          _this.tuichuquanping = tuichuquanping
+        } else {
+          _this.exitFull();
+          _this.tuichuquanping = tuichuquanping
+        }
+
+      },
+    }
+  }
+</script>

@@ -1,0 +1,13 @@
+/*
+ * @description: vps 登录
+ * @author: wp
+ * @update: wp (2018-05-30)
+ */
+import axios from 'axios';
+var _api = '/api';
+
+//获取当前公司
+export const login = params => {
+  return axios.post(`${_api}/user/login`, params);
+};
+

@@ -1,0 +1,61 @@
+<!--*
+* @description: 左侧车辆操作 切换框
+* @author: wp,wqh
+* @update: 2018-05-5
+-->
+<template>
+  <section id="toolBox">
+     <div class="treeDiv transitionHeight02" id="treeOpenS" :style="{height:autoheight}">
+       <div class="left-top"></div>
+       <div class="right-top"></div>
+       <div class="let-bottom"></div>
+       <div class="right-bottom"></div>
+      <div class="navs">
+        <span class="navTit">车辆</span>
+        <i class="iconfont icon-juxingkaobei cur" @click="boxClick"></i>
+        <i class="iconfont icon-dianziweilan" @click="boxClick"></i>
+        <i class="iconfont icon-guanzhu" @click="boxClick"></i>
+        <i class="iconfont icon-shaixuan" @click="boxClick"></i>
+      </div>
+      <!-- 缓存指定组件 -->
+      <keep-alive include="tree,Efence,followCar">
+        <slot :name="type"></slot>
+      </keep-alive>
+    </div>
+  </section>
+</template>
+
+<script>
+  export default {
+    name: "box",
+    props: {
+      treeStateProps:{
+        type: Number,
+        default: 0,
+      }
+    },
+    data() {
+      return {
+        type: "ls1",
+      }
+    },
+    computed: {
+      autoheight(){
+        return this.treeStateProps == 1 ? 'calc(100vh - 135px)':'0px'
+      }
+    },
+    methods: {
+      //点击按钮切换板块 显示指定类型 内容
+      boxClick(e) {
+        if ($(e.target).hasClass('icon-guanzhu')) {
+          $(e.target).addClass('icon-guanzhu1').siblings().removeClass('cur');
+        } else {
+          $(e.target).addClass('cur').siblings()
+            .removeClass('cur')
+            .removeClass('icon-guanzhu1')
+        }
+        this.type = "ls" + $(e.target).index();
+      }
+    }
+  }
+</script>

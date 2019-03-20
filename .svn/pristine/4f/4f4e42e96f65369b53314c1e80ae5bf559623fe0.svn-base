@@ -1,0 +1,36 @@
+<template>
+  <div id="mapTool">
+    <div class="leftMenu">
+      <!--<seachs @seachVal="carInfo"></seachs>-->
+      <menuTree></menuTree>
+    </div>
+  </div>
+</template>
+
+<script>
+  import seachs from '@/components/mapTool/seach.vue' // 搜索框
+  import menuTree from '@/components/mapTool/tree.vue'// 左侧树
+  // import '~/assets/defaultTheme/css/cooTool2.css'  //换肤css
+  export default {
+    name: 'index',
+    data () {
+      return {
+        www: ''
+      }
+    },
+    mounted () {
+
+    },
+    methods: {
+      // 子组件传来的搜索数据
+      carInfo (data) {
+      }
+    },
+    filters: {},
+    components: {
+      seachs,
+      menuTree
+    },
+    watch: {}
+  }
+</script>

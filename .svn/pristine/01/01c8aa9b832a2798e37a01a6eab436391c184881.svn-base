@@ -1,0 +1,237 @@
+<template>
+    <section id="carPoliceBox" >
+      <!-- 四边小角 -->
+      <div class="left-top"></div>
+      <div class="right-top"></div>
+      <div class="let-bottom"></div>
+      <div class="right-bottom"></div>
+      <div class="detail">
+        <div class="header">
+          <span>车辆报警</span>
+          <span style="font-size: 20px; margin-left:8px">{{numberData.Allcont}}次</span>
+        </div>
+        <ul class="infoTit">
+          <li>电子围栏 <span>次</span><span style="margin-right: 4px" v-text="numberData.EnclosureValue"></span></li>
+          <li>原地设防 <span>次</span><span style="margin-right: 4px" v-text="numberData.fortificationValue"></span></li>
+          <li>偏离长停点 <span>次</span><span style="margin-right: 4px" v-text="numberData.stopValue"></span></li>
+          <li>设备低电 <span>次</span><span style="margin-right: 4px" v-text="numberData.LowPointValue"></span></li>
+          <li>停车超时 <span>次</span><span style="margin-right: 4px" v-text="numberData.overtimeValue"></span></li>
+          <li>设备状态报警 <span>次</span><span style="margin-right: 4px" v-text="numberData.policeValue"></span></li>
+          <li>风险点停留超时 <span>次</span><span style="margin-right: 4px" v-text="numberData.remainValue"></span></li>
+        </ul>
+      </div>
+      <div id="alarmChart"></div>
+
+    </section>
+</template>
+<script>
+export default {
+  name: '',
+  data () {
+    return {
+      numberData : {
+          EnclosureValue:'',          //电子围栏次数
+          fortificationValue:'',      //原地设防次数
+          stopValue:'',               //偏离长停点次数
+          LowPointValue:'',           //设备低电次数
+          overtimeValue:'',           //停车超时次数
+          policeValue:'',             //设备状态报警次数
+          remainValue:'',             //风险点停留超时次数
+          Allcont:'',                 //总次数
+      },
+    }
+  },
+  props:['cls'],
+  mounted () {
+    let _this=this;
+    _this.$nextTick(function(){
+     _this.drawLine(3);
+    })
+  },
+  computed:{
+    timeState(){
+      return this.$store.getters.timeState;
+    },
+  },
+  methods: {
+    drawLine(timeState) {
+      let chartData='', _this=this;
+      switch (+timeState) {
+        //年
+        case 1:{
+          _this.numberData.EnclosureValue = 521;
+          _this.numberData.fortificationValue = 450;
+          _this.numberData.stopValue = 770;
+          _this.numberData.LowPointValue = 510;
+          _this.numberData.overtimeValue = 660;
+          _this.numberData.policeValue = 412;
+          _this.numberData.remainValue = 330;
+          _this.numberData.Allcont = 3653;
+          chartData = [
+            {
+              value:521,
+              name:'电子围栏'
+            },
+            {
+              value:450,
+              name:'原地设防'
+            },
+            {
+              value:770,
+              name:'偏离长停点'
+            },
+            {
+              value:510,
+              name:'设备低电'
+            },
+            {
+              value:660,
+              name:'停车超时'
+            },
+            {
+              value:412,
+              name:'设备状态报警'
+            },
+            {
+              value:330,
+              name:'风险点停留超时'
+            }
+          ];
+          _this.chartInit(chartData);
+          break;
+        }
+        //月
+        case 2:{
+          _this.numberData.EnclosureValue = 121;
+          _this.numberData.fortificationValue = 250;
+          _this.numberData.stopValue = 170;
+          _this.numberData.LowPointValue = 310;
+          _this.numberData.overtimeValue = 90;
+          _this.numberData.policeValue = 112;
+          _this.numberData.remainValue = 160;
+          _this.numberData.Allcont = 1213;
+          chartData = [
+            {
+              value:121,
+              name:'电子围栏'
+            },
+            {
+              value:250,
+              name:'原地设防'
+            },
+            {
+              value:170,
+              name:'偏离长停点'
+            },
+            {
+              value:310,
+              name:'设备低电'
+            },
+            {
+              value:90,
+              name:'停车超时'
+            },
+            {
+              value:112,
+              name:'设备状态报警'
+            },
+            {
+              value:160,
+              name:'风险点停留超时'
+            }
+          ];
+          _this.chartInit(chartData);
+          break;
+        }
+        //日
+        case 3:{
+          _this.numberData.EnclosureValue = 5;
+          _this.numberData.fortificationValue = 6;
+          _this.numberData.stopValue = 12;
+          _this.numberData.LowPointValue = 20;
+          _this.numberData.overtimeValue = 30;
+          _this.numberData.policeValue = 11;
+          _this.numberData.remainValue = 4;
+          _this.numberData.Allcont = 88;
+          chartData = [
+            {
+              value:5,
+              name:'电子围栏'
+            },
+            {
+              value:6,
+              name:'原地设防'
+            },
+            {
+              value:12,
+              name:'偏离长停点'
+            },
+            {
+              value:20,
+              name:'设备低电'
+            },
+            {
+              value:30,
+              name:'停车超时'
+            },
+            {
+              value:11,
+              name:'设备状态报警'
+            },
+            {
+              value:4,
+              name:'风险点停留超时'
+            }
+          ];
+          _this.chartInit(chartData);
+          break;
+        }
+      }
+    },
+    chartInit(chartData){
+      let _this=this;
+      // 基于准备好的dom，初始化echarts实例
+      let chartDiv = document.querySelector("#alarmChart");
+      //自适应宽高
+      let myChartContainer = function () {
+        chartDiv.style.width = $("#carPoliceBox").width() - $("#carPoliceBox").width()*0.3 +'px';
+        chartDiv.style.height = $("#carPoliceBox").height() +'px';
+      };
+      myChartContainer();
+      let alarmChart = _this.$echarts.init(document.getElementById('alarmChart'));
+      let chartType='alarm';
+      alarmChart.setOption({
+        tooltip : {
+          trigger: 'item',
+          formatter: "{a} <br/>{b} : {c}次 ({d}%)"
+        },
+        toolbox: {
+          show : false
+        },
+        calculable : true,
+        color:['#1e9bfe','#00507c','#0074b4','#80b1d5','#a7cfe3','#43aacd','#0080a6'],
+        series : [
+          {
+            name:'车辆报警',
+            type:'pie',
+            radius : '55%',
+            center: ['50%', '60%'],
+            data:chartData
+          }
+        ]
+      });
+      //浏览器大小改变时重置大小
+      window.addEventListener("resize", function () {
+        myChartContainer();
+        alarmChart.resize();
+      });
+    }
+  },
+  watch:{
+    timeState:function (newVal, oldVal) {
+      this.drawLine(newVal);
+    },
+  },
+}
+</script>
+

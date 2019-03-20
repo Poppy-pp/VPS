@@ -1,0 +1,138 @@
+<template>
+    <section id="riskBox">
+      <!-- 四边小角 -->
+      <div class="left-top"></div>
+      <div class="right-top"></div>
+      <div class="let-bottom"></div>
+      <div class="right-bottom"></div>
+      <div class="header">
+          <span>总数统计</span>
+     </div>
+      <div id="pieChart"></div>
+    </section>
+</template>
+<script>
+export default {
+  name: '',
+  data () {
+    return {
+    }
+  },
+  computed:{
+    timeState(){
+      return this.$store.getters.timeState;
+    }
+  },
+  mounted () {
+    let _this=this;
+    _this.$nextTick(function(){
+      _this.drawLine(3);
+    })
+  },
+  methods: {
+    drawLine(timeState) {
+      let chartData={};
+      switch (+timeState) {
+        //年
+        case 1:{
+          chartData.drivingOrder = 3653;
+          chartData.allKilometre = 4105;
+          chartData.allOnLine = 2579;
+          chartData.allPilace = 3244;
+          this.chartInit(chartData);
+          break;
+        }
+        //月
+        case 2:{
+          chartData.drivingOrder = 1213;
+          chartData.allKilometre = 989;
+          chartData.allOnLine = 880;
+          chartData.allPilace = 900;
+          this.chartInit(chartData);
+          break;
+        }
+        //日
+        case 3:{
+          chartData.drivingOrder = 88;
+          chartData.allKilometre = 40;
+          chartData.allOnLine = 50;
+          chartData.allPilace = 60;
+          this.chartInit(chartData);
+          break;
+        }
+      }
+    },
+    chartInit(chartData){
+      // 基于准备好的dom，初始化echarts实例
+      let chartDiv = document.querySelector("#pieChart");
+      // let parentDiv = document.querySelector("#riskBox");
+      //自适应宽高
+      let myChartContainer = function () {
+        // parentDiv.style.height = window.innerHeight/3.39 +'px';
+        chartDiv.style.width = $("#riskBox").width() +'px';
+        chartDiv.style.height = $("#riskBox").height() +'px';
+      };
+      myChartContainer();
+      let riskChart = this.$echarts.init(chartDiv);
+      riskChart.setOption({
+        tooltip: {
+          trigger: 'item',
+          formatter: "总数统计 <br/>{b}: {c} ({d}%)"
+        },
+        legend: {
+          orient: 'vertical',
+          x: 'left',
+          data:['总行车次数','总公里数','总在线次数','总报警次数',],
+          textStyle:{
+            color:'#fff'
+          }
+        },
+        series: [
+          {
+            name:'访问来源',
+            type:'pie',
+            radius: ['60%', '80%'],
+            avoidLabelOverlap: false,
+            label: {
+              normal: {
+                show: false,
+                position: 'center'
+              },
+              emphasis: {
+                show: true,
+                textStyle: {
+                  fontSize: '30',
+                  fontWeight: 'bold'
+                }
+              }
+            },
+            labelLine: {
+              normal: {
+                show: false
+              }
+            },
+            data:[
+              {value:chartData.drivingOrder, name:'总行车次数'},
+              {value:chartData.allKilometre, name:'总公里数'},
+              {value:chartData.allOnLine, name:'总在线次数'},
+              {value:chartData.allPilace, name:'总报警次数'},
+            ]
+          }
+        ]
+      });
+      //浏览器大小改变时重置大小
+      window.addEventListener("resize", function () {
+        myChartContainer();
+        riskChart.resize();
+      });
+    }
+  },
+  watch:{
+    timeState:function (newVal, oldVal) {
+      this.drawLine(newVal);
+    }
+  },
+}
+</script>
+
+

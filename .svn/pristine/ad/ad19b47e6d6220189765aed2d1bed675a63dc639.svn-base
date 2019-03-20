@@ -1,0 +1,398 @@
+import utils from '@/utils/tool.js' //车辆信息
+export default {
+    //设置 总数统计信息
+    SET_COUNT (state,data) {
+      state.count.alarmAll = data.alarmAll ? data.alarmAll : 0;
+      state.count.mileAll = data.mileAll ? data.mileAll : 0;
+      state.count.driveAll = data.driveAll ? data.driveAll : 0;
+      state.count.onLineAll = data.onLineAll ? data.onLineAll : 0;
+      console.log(data.mileAll)
+    },
+    //设置当前用户信息
+    SET_USER (state, user) {
+      state.user = user || null
+    },
+    //设置默认地图
+    SET_DEFAULT_MAPTYPE(state){
+      let t = localStorage.getItem('MAPTYPE');
+      state.map.MAPTYPE = t | 0;
+    },
+    //更新地图类型
+    UPDATE_MAPTYPE(state,t){
+      window.localStorage.setItem('MAPTYPE',t);
+      state.map.MAPTYPE = t;
+    },
+    //切换主题
+    UPDATE_THEME(state,t){
+      window.localStorage.setItem('theme',t);
+    },
+    //更新缓冲 过渡效果状态
+    update_curLoading(state,s){
+      state.curLoading = Object.assign({}, state.curLoading, s);
+    },
+    //更新用户通信状态
+    update_userSignal_state(state,s){
+      state.signalState = s;
+    },
+    //设置用户当前默认城市
+    set_user_defaultCity (state, city) {
+      state.city = city || '成都市'
+    },
+    //更新树搜索关键字的值
+    update_searchVal(state,newval){
+      state.searchVal = newval;
+    },
+    //更新分组统计信息
+    update_GroupStatistics(state,data){
+      state.GroupStatistics = data;
+    },
+    //添加监控车辆 和 车辆对应的label
+    add_carMarker(state,{marker,marker_label}){
+      state.carlabelList.splice(0,0,marker_label);
+      state.carMarkerList.splice(0,0,marker);
+    },
+    //更新历史缩放窗体 信息
+    update_hisZoom(state,info){
+      var veh = state.hisZoom.info.filter(function(item,index){
+        if(item.vehicleid == info.vehicleid){
+          return item;
+        }
+      });
+      if(veh.length == 0) state.hisZoom.info.push(info);
+    },
+    //根据车辆id 隐藏历史缩放窗体
+    hiddenHisWind(state,{vehicleid,ishidden}){
+      state.hisZoom.info.map(function(item,index){
+        if(item.vehicleid == vehicleid){
+          item.isHidden = ishidden;
+          return item;
+        }
+      })
+    },
+    //根据车辆id 隐藏历史缩放窗体
+    isHisWind(state,{vehicleid,callback}){
+      var ishis = state.hisZoom.info.filter(function(item,index){
+        if(item.vehicleid == vehicleid){
+          return item;
+        }
+      })
+      callback(ishis);
+    },
+    //更具车辆id 删除历史缩放窗体
+    removeHisWind(state,_this){
+      var vehicleid = _this.id.slice(3)
+      var veh = state.hisZoom.info.filter(function(item,index){
+        if(item.vehicleid == vehicleid){
+          item.index = index;
+          return item;
+        }
+      })
+      if(veh.length > 0) {
+        state.hisZoom.info.splice(veh[0].index,1)
+        if(state.hisZoom.info.length == 0){
+          _this.$indexedDB.clear('vehHistory');
+        }else{
+          _this.$indexedDB.cursorDeldteData('vehHistory','vehicleidIndex',vehicleid);
+        }
+
+      }
+    },
+    //更新历史轨迹数据
+    update_Trajectory(state,{data}){
+      state.TrajectoryTable  = data;
+    },
+    //删除地图上指定车辆maker 和 车辆对应的label
+    delete_carMarker(state,index){
+      state.carlabelList.splice(index,1);
+      state.carMarkerList.splice(index,1);
+    },
+    //添加监控列表信息
+    add_monitorData(state,{basicdata,data}){
+      if(basicdata.vehicleid == null && basicdata.vehicleid != undefined) return;
+      let md = state.monitorData.filter(function(item){
+          return item.vehicleid == data.vehicleid;
+      });
+      if(md.length == 0 || state.monitorData.length == 0){
+        let row = {};
+        row.vehicleid = data.vehicleid;
+        row.cjh = basicdata.vin;
+        row.cpys = "";
+        row.czxm = basicdata.ownername;
+        row.czxb = basicdata.ownersex;
+        row.sfzhm = basicdata.idcard;
+        row.sjhm = basicdata.ownermobile;
+        row.cjsj = utils.transformTime(basicdata.appointdate);
+        row.cllx = basicdata.vehicletype;
+        row.clxh = basicdata.model;
+        row.csys = basicdata.color;
+        row.carNo = data.label;
+        if (basicdata.serviceexpdate) row.fwdqsj = utils.transformTime(basicdata.serviceexpdate).split(" ")[0];
+        state.monitorData.splice(0,0,row);
+        row.checkType = data.checkType;
+        if(data.checkType == 0) state.setCurVehInfo.splice(0,0,row);
+      }
+    },
+    //删除监控列表信息
+    delete_monitorData(state,index){
+      state.monitorData.splice(index,1);
+      if(state.setCurVehInfo[index] && state.setCurVehInfo[index].checkType == 0) state.setCurVehInfo.splice(index,1);
+      state.abnormalNum = state.abnormalData.length;     //异常次数赋值
+    },
+    //删除报警列表信息
+    delete_policeData(state,index){
+      state.policeData.splice(index,1);
+      state.policeDataNum = state.policeData.length;     //报警次数赋值
+    },
+    //删除异常列表信息
+    delete_abnormalData(state,index){
+      state.abnormalData.splice(index,1);
+    },
+    //更新table车辆id获取所有关注
+    update_follow(state,{ fllowList,vehicleid }){
+      let careType = '';
+      //关注类型列表
+      fllowList.forEach((item,index)=>{
+        if(index+1 != fllowList.length)
+          careType += item.pname + ',';
+        else
+          careType += item.pname;
+      });
+      state.monitorData = state.monitorData.map(function(item){
+          if(item.vehicleid == vehicleid)
+            return Object.assign({}, item, {careType:careType})
+          else
+            return item;
+      });
+    },
+
+    //更新table车辆详情信息
+    update_VE(state,{ VE,vehicleid }){
+     let dzwl = '';
+     //电子围栏列表
+      VE.forEach((item,index)=>{
+        if(index+1 != VE.length)
+               dzwl += item.EfenceName + ',';
+        else
+          dzwl += item.EfenceName
+      });
+      state.monitorData = state.monitorData.map(function(item){
+          if(item.vehicleid == vehicleid)
+            return Object.assign({}, item, {dzwl:dzwl})
+          else
+            return item;
+      });
+    },
+
+    //更新table车辆详情信息
+    update_tableVehicledetail(state,row){
+      state.monitorData = state.monitorData.map(function(item,index){
+          if(item.vehicleid == row.vehicleid)
+            return Object.assign({}, item, row)
+          else
+            return item;
+      });
+    },
+    //经纬度转地址
+    getPointAddressMut(state,{map,vehicleid,point}){
+      map.$methods.getPointAddress(point,function(data){
+        let address = '';
+        state.monitorData = state.monitorData.map(function(item){
+            if(item.vehicleid == vehicleid)
+              return Object.assign({}, item, {address:data})
+            else
+              return item;
+        });
+      });
+    },
+    //车子弹框信息关闭/打开
+    carBoxOpenOrClose(state,{openState,$class,$closeClass}){
+      let frameBoxAll = state.frameBoxAll;
+      utils.closeBoxCom(state,$closeClass);
+      switch ($class) {
+        case 'ydsf':{
+          frameBoxAll.fortificationBox = openState;
+          break;
+        }
+        case 'dzwk':{
+          frameBoxAll.enclosureBox = openState;
+          break;
+        }
+        case 'zhiling':{
+          frameBoxAll.instructionsBox = openState;
+          break;
+        }
+        case 'genzong':{
+          frameBoxAll.followFrameBox = openState;
+          break;
+        }
+        default:{
+          break;
+        }
+      }
+  },
+    //监控列表和监控列表详情内容切换
+    listOrDeails(state,{index,states}){
+      if (states) {
+        state.monitorListState = false;
+        state.policeListState = false;
+        state.abnormaListState = false;
+        switch (+index) {
+          case 0:{
+            state.monitorlsitDetailsState = true;
+            break;
+          }
+          case 1:{
+            state.policeListDetailsState = true;
+            break;
+          }
+          case 2:{
+            state.abnormaListDetailsState = true;
+            break;
+          }
+        }
+
+      }else{
+        state.monitorlsitDetailsState = false;
+        state.policeListDetailsState = false;
+        state.abnormaListDetailsState = false;
+        switch (+index) {
+          case 0:{
+            state.monitorListState = true;
+            break;
+          }
+          case 1:{
+            state.policeListState = true;
+            break;
+          }
+          case 2:{
+            state.abnormaListState = true;
+            break;
+          }
+        }
+      }
+    },
+    //车辆报警列表数据获取
+    policeData(state,result){
+      let noPush=false;
+      let policeMseeg = `<p>车辆 ${result.obj.carNo} ${result.obj.policeInfo}</p>
+                         <p>设备号 ${result.obj.equipmentNo}</p>
+                         <p>GPS时间 ${result.obj.GPSTime}</p>
+                         <p>接收时间 ${result.obj.serverTime}</p>`;
+      if(state.policeData.length){
+        for(let item of state.policeData){
+            if(item.vehicleid == result.obj.vehicleid){      //如果报警数据有重复，就去重并且报警次数+1
+                item.policeSecond+= 1;
+                noPush = true
+            }
+        }
+      }
+      if(state.abnormalData.length){
+        for(let item of state.abnormalData){
+          if(item.vehicleid == result.obj.vehicleid){        //如果异常数据有重复，就去重并且报警次数+1
+            item.policeSecond+= 1;
+                noPush = true
+          }
+        }
+      }
+      if(!noPush){
+        if (result.stateType == 5 || result.stateType == 6) {
+          console.log('报警状态码',result.stateType);
+          state.policeRightFrame = policeMseeg;              //推送消息装填
+          state.policeData.unshift(result.obj);              //报警状态树添加
+          state.policeDataNum = state.policeData.length;     //报警次数赋值
+          console.log('报警次数增加',state.policeData, state.policeDataNum)
+        }else{
+          console.log('报警状态码',result.stateType);
+          state.abnormalRightFrame = policeMseeg;            //推送消息装填
+          state.abnormalData.unshift(result.obj);            //异常状态树添加
+          state.abnormalNum = state.abnormalData.length;     //异常次数赋值
+          console.log('异常次数增加',state.abnormalData, state.abnormalNum)
+        }
+      }
+    },
+    //监控列表详情获取
+    monitorDataDetails(state,{map,result}){
+      let data = state.monitorDataDetails = result;
+      map.$methods.getPointAddress([data.realdata.lng,data.realdata.lat],function(ad){
+        state.monitorDataDetails.realdata = Object.assign({}, data.realdata, {address:ad})
+      });
+    },
+    //报警详情数据获取
+    policeDataDetails(state,result){
+      state.policeDataDetails = result;
+    },
+    //异常详情数据获取
+    abnormalDetails(state,result){
+      state.abnormalDetails = result;
+    },
+    //改变行为分析的年月日时间
+    timeState(state,result){
+      state.timeState = result
+    },
+    //鼠标划过当前车辆，更新当前车的 经纬度和 车辆标识ID
+    updateCarInfo(state,result){
+      state.moveCarInfo.vehicleid = result.realdata.vehicleid;
+      state.moveCarInfo.lng = result.realdata.lng;
+      state.moveCarInfo.lat = result.realdata.lat;
+      state.moveCarInfo.carno = result.basicdata.carno;
+      state.moveCarInfo.ownername = result.basicdata.ownername;
+    },
+    //获取地图对象
+    getMapObj(state,result){
+      state.mapObj=result;
+    },
+    //车辆设防覆盖物添加
+    coverUpdate(state,result){
+      state.coverArr.push(result);
+      console.log('设防覆盖车辆数据',state.coverArr)
+    },
+    //更新窗口放大缩小状态
+    zoomUpdate(state,result){
+      let $speedChart = document.querySelector("#speedChart"),
+          $driveTimeChart = document.querySelector("#driveTimeChart"),
+          $mileageChart = document.querySelector("#mileageChart"),
+          $pieChart = document.querySelector("#pieChart"),
+          $stopElectricChart = document.querySelector("#stopElectricChart"),
+          $alarmChart = document.querySelector("#alarmChart");
+      //自适应宽高
+      let myChartContainer = function () {
+        $speedChart.style.width = $("#speedChartComents").width() +'px';
+        $speedChart.style.height = $("#speedChartComents").height() +'px';
+
+        $driveTimeChart.style.width = $("#driveTimeChartComents").width() +'px';
+        $driveTimeChart.style.height = $("#driveTimeChartComents").height() +'px';
+
+        $mileageChart.style.width = $("#mileageChartComents").width() +'px';
+        $mileageChart.style.height = $("#mileageChartComents").height() +'px';
+
+        $pieChart.style.width = $("#riskBox").width() +'px';
+        $pieChart.style.height = $("#riskBox").height() +'px';
+
+        $stopElectricChart.style.width = $("#stopElectricBox").width() +'px';
+        $stopElectricChart.style.height = $("#stopElectricBox").height() +'px';
+
+        $alarmChart.style.width = $("#carPoliceBox").width() - $("#carPoliceBox").width()*0.3 +'px';
+        $alarmChart.style.height = $("#carPoliceBox").height() +'px';
+      };
+      myChartContainer();
+      /*速度图表*/
+      let speedChart = state.echaerObj.init($speedChart);
+      speedChart.resize();
+      /*行驶时长*/
+      let driveTimeChart = state.echaerObj.init($driveTimeChart);
+      driveTimeChart.resize();
+      /*总里程*/
+      let mileageChart = state.echaerObj.init($mileageChart);
+      mileageChart.resize();
+      /*风险监控*/
+      let pieChart = state.echaerObj.init($pieChart);
+      pieChart.resize();
+      /*长停点*/
+      let stopElectricChart = state.echaerObj.init($stopElectricChart);
+      stopElectricChart.resize();
+      /*车辆报警*/
+      let alarmChart = state.echaerObj.init($alarmChart);
+      alarmChart.resize();
+    },
+
+}

@@ -1,0 +1,184 @@
+<!-- 数据图表-行车时长 -->
+<template>
+  <section id="driveTimeChartComents">
+      <div id="driveTimeChart"></div>
+      <!-- 四边小角 -->
+      <div class="left-top"></div>
+      <div class="right-top"></div>
+      <div class="let-bottom"></div>
+      <div class="right-bottom"></div>
+  </section>
+</template>
+<script>
+  import { driveLength } from '@/Api/mapApi.js'
+  export default {
+    name: '',
+    data (){
+      return {
+        listData:[],//数据组
+      }
+    },
+    computed:{
+      timeState(){
+        return this.$store.getters.timeState;
+      }
+    },
+    mounted(){
+      let _this=this;
+      _this.getDataDetail((data) =>{//获取数据
+          _this.drawLine(1,data);
+      })
+    },
+    methods: {
+      // 获取数据
+      getDataDetail(callback){
+        var reg = /[a-zA-Z]/g,carid = ''; // 去掉车辆id中的字母
+        carid = this.$store.state.hisZoom.info[0].vehicleid.replace(reg,"");
+        let para = {
+          carId:carid,
+          type:this.$store.getters.timeState
+        }
+        driveLength(para).then((res) =>{
+          if (res.data.status == 'SUCCEED') {
+              this.listData = res.data.data;
+              this.$store.commit("SET_COUNT", {driveAll:this.listData.total});//更新vuex，提供给总数统计
+          }
+          if(callback) callback(this.listData)
+        })
+      },
+
+
+      drawLine(timeState,listData) {
+        let chartTime='',chartData='',itemTime = [],itemTimeLength = [];//声明时间组、行车时长组;
+        listData.runList.forEach((item,index) =>{
+            if (timeState == 1) {//年
+                itemTime.push(item.TIME.split('-')[1]);
+            }else if (timeState == 2) {//月
+                itemTime.push(item.TIME.split('-')[2]);
+            }else if (timeState == 3) {//日
+                itemTime.push(item.TIME.split('-')[2].split(' ')[1]);
+            } 
+                itemTimeLength.push(item.VALUE ? item.VALUE : 0)
+        });;
+        switch (+timeState) {
+          //年
+          case 1:{
+            chartTime = itemTime;
+            chartData = itemTimeLength;
+            this.chartInit(chartTime,chartData,'月');
+            break;
+          }
+          //月
+          case 2:{
+            chartTime = itemTime;
+            chartData = itemTimeLength;
+            this.chartInit(chartTime,chartData,'日');
+            break;
+          }
+          //日
+          case 3:{
+            chartTime = itemTime;
+            chartData = itemTimeLength;
+            this.chartInit(chartTime,chartData,'点');
+            break;
+          }
+        }
+      },
+      chartInit(chartTime,chartData,timeCompany){
+        let _this=this;
+        // 基于准备好的dom，初始化echarts实例
+        let chartDiv = document.querySelector("#driveTimeChart");
+        //自适应宽高
+        let myChartContainer = function () {
+          chartDiv.style.width = $("#driveTimeChartComents").width() +'px';
+          chartDiv.style.height = $("#driveTimeChartComents").height() +'px';
+        };
+        myChartContainer();
+        let driveTimeChart = _this.$echarts.init(chartDiv);
+        driveTimeChart.setOption({
+         grid: {
+           left: '3%',
+           right: '4%',
+           bottom: '3%',
+           containLabel: true,
+         },
+         toolbox: {
+           show : false
+         },
+         tooltip : {
+           trigger: 'axis',
+           formatter: function (params, ticket, callback) {
+             return '<div style="padding: 6px">' +
+               '<p>&nbsp;&nbsp;&nbsp;时间：&nbsp;' +params[0].name+timeCompany+'</p>' +
+               '<p><span style="background: #c23513;width: 10px;height: 10px;border-radius: 50%;display: inline-block"></span> ' +
+               '<span> 行车时长：'+params[0].value+'/分钟</p>' +
+               '</div>';
+           }
+         },
+         legend: {
+           data:['行车时长'],
+           textStyle:{
+             color:'#fff'
+           }
+         },
+         xAxis : [
+           {
+             show:true,
+             type : 'category',
+             boundaryGap : false,
+             data: chartTime.length != 0 ? chartTime : '暂无数据' ,
+             axisLabel: {
+               textStyle: {
+                 color: '#FFFFFF'
+               }
+             },
+             axisLine: {
+               lineStyle: {
+                 color: '#FFFFFF'
+               }
+             }
+           }
+         ],
+         yAxis : [
+           {
+             type : 'value',
+             axisLabel: {
+               textStyle: {
+                 color: '#FFFFFF'
+               }
+             },
+             axisLine: {
+               lineStyle: {
+                 color: '#FFFFFF'
+               }
+             }
+           }
+         ],
+         series : [
+           {
+             name:'行车时长',
+             type:'line',
+             stack: '总量',
+             areaStyle: {normal: {}},
+             data:chartData
+           },
+         ]
+       });
+        //浏览器大小改变时重置大小
+        window.addEventListener("resize", function () {
+          myChartContainer();
+          driveTimeChart.resize();
+        });
+      }
+    },
+    watch:{
+      timeState:function (newVal, oldVal) {
+        this.getDataDetail((data)=>{//获取数据
+           this.drawLine(newVal,data);
+        });
+      }
+    },
+  }
+</script>
+
+

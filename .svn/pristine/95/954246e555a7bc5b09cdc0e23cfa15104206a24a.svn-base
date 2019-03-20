@@ -1,0 +1,81 @@
+<template>
+    <section id="personalInfo">
+          <div class="left-top"></div>
+          <div class="right-top"></div>
+          <div class="let-bottom"></div>
+          <div class="right-bottom"></div>
+          <div class="monitorHead">
+            <span class="carBrandSpan">
+               <span class="carBrand">川A66888</span>
+            </span>
+            <span class="carOwnerName">张三</span>
+            <!--信息图标-->
+            <i class="iconfont icon-nan" style="color: #009bfb;font-size: 18px"></i>
+            <i class="iconfont icon-baozhang-copy" style="color: #ff6a1a"></i>
+            <!--end-->
+          </div>
+          <div class="timeTable">
+              <span>默认统计时间:</span>
+              <span class="timeSpan" @click="choiceTime(1,$event)">年</span>
+              <span class="timeSpan" @click="choiceTime(2,$event)">月</span>
+              <span class="timeSpan activeTime" @click="choiceTime(3,$event)">日</span>
+          </div>
+          <div class="infoContent">
+              <div class="line">
+                <p class="leftTits">车架号:</p><p title="2145456448468486468448" class="rightData">2145456448468486468448</p>
+              </div>
+              <div class="line">
+                <p class="leftTits">设备号:</p><p title="144889898983" class="rightData">144889898983</p>
+              </div>
+              <div class="line">
+                <p class="leftTits">SIM:</p><p title="105496798989" class="rightData">105496798989</p>
+              </div>
+              <div class="line">
+                <p class="leftTits">所属公司:</p><p title="万网公司" class="rightData">万网公司</p>
+              </div>
+              <div class="line">
+                <p class="leftTits">车辆类型:</p><p title="出租车车辆" class="rightData">出租车车辆</p>
+              </div>
+              <div class="line">
+                <p class="leftTits">型号:</p><p title="大众辉腾 2018款 2.4T" class="rightData">大众辉腾 2018款 2.4T</p>
+              </div>
+              <div class="line">
+                <p class="leftTits">车身颜色:</p><p title="黑色" class="rightData">黑色</p>
+              </div>
+              <div class="line">
+                <p class="leftTits">联系电话:</p><p title="13879654345" class="rightData">13879654345</p>
+              </div>
+              <div class="line">
+                <p class="leftTits">身份证号:</p><p title="5101598984656565689898" class="rightData">5101598984656565689898</p>
+              </div>
+              <div class="line">
+                <p class="leftTits">接入时间:</p><p title="2018-01-09 13:30:10" class="rightData">2018-01-09 13:30:10</p>
+              </div>
+            </div>
+
+    </section>
+</template>
+
+<script>
+    export default {
+        name: "",
+        components: {},
+        props: [],
+        data() {
+            return {}
+        },
+        mounted() {
+
+        },
+        methods: {
+          choiceTime(timeState,e){
+            let $this=$(e.target);
+                $this.addClass('activeTime').siblings().removeClass('activeTime');
+                this.$store.commit("timeState", timeState);
+          }
+        },
+        filters: {},
+        watch: {},
+
+    }
+</script>

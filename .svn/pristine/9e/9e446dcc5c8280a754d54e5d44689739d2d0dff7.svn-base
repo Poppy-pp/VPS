@@ -1,0 +1,268 @@
+<!--*
+* @description: 监控列表
+* @author: wp
+* @update: 2018-05-3
+-->
+<template>
+  <div class="monitorList setion1 h100">
+    <!--监控列表  start-->
+    <el-table v-if="monitorListState" height="100%" @row-dblclick="rowDblclickFitView" :data="monitorData" style="width: 100%">
+      <el-table-column fixed="left" align="center" label="#" width="60">
+        <template slot-scope="scope">
+          <i class="iconfont icon-iconfontguanbi" title="取消监控" @click.stop="deleteRow(scope.$index, scope.row)"></i>
+        </template>
+      </el-table-column>
+      <el-table-column prop="carNo" fixed="left" label="车辆" align="center" width="260">
+        <template slot-scope="scope">
+          <div>{{scope.row.carNo+" "+ (scope.row.czxb!=null ? scope.row.czxb: "")}}</div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="corpname" align="center" width="300" label="公司分组">
+          <template slot-scope="scope">
+          <div>{{scope.row.corpname+"  "+scope.row.clxh+"  "+(scope.row.csys!=null ? scope.row.csys:"")}}</div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="carState" align="center" label="车辆状态" width="300">
+        <template slot-scope="scope">
+          <div>{{(scope.row.carState ? scope.row.carState : "未知")+" "+((scope.row.speed  !=0 && scope.row.speed  !=undefined) ? "("+scope.row.speed+"km/h)" : "")+" / "
+              +(scope.row.fx ? scope.row.fx : "未知")+" / "+(scope.row.localType ? scope.row.localType : "未知")}}
+              </div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="kxd" align="center" width="180" label="可信度(%)">
+      </el-table-column>
+      <el-table-column prop="gpsTime" align="center" width="180" label="GPS时间">
+      </el-table-column>
+      <el-table-column prop="serverTime" align="center" width="180" label="服务器时间">
+      </el-table-column>
+      
+      <!-- <el-table-column prop="carNo" fixed="left" label="车牌号" align="center" width="220">
+      </el-table-column>
+      <el-table-column prop="corpname" align="center" width="150" label="公司分组">
+      </el-table-column>
+      <el-table-column prop="careType" align="center" label="关注类型">
+      </el-table-column>
+      <el-table-column prop="carState" align="center" label="车辆状态">
+      </el-table-column>
+      <el-table-column prop="bz" align="center" label="备注">
+      </el-table-column> -->
+      <!--<el-table-column prop="ydsf" align="center" width="120" label="原地设防(米)">
+      </el-table-column>
+      <el-table-column prop="dzwl" align="center" width="200" label="电子围栏">
+      </el-table-column>
+       <el-table-column prop="gpsTime" align="center" width="155" label="GPS时间">
+      </el-table-column>
+      <el-table-column prop="serverTime" align="center" width="155" label="服务器时间">
+      </el-table-column>
+      <el-table-column prop="local" align="center" label="有效定位">
+      </el-table-column>
+      <el-table-column prop="localType" align="center" label="定位方式">
+      </el-table-column>
+      <el-table-column prop="fx" align="center" label="方向">
+      </el-table-column>
+      <el-table-column prop="speed" align="center" width="100" label="速度(km/h)">
+      </el-table-column>
+      <el-table-column prop="sim" align="center" label="SIM卡">
+      </el-table-column> 
+      <el-table-column prop="sbid" align="center" width="150" label="设备号码">
+      </el-table-column>
+      <el-table-column prop="sbazsj" align="center" width="120" label="设备安装时间">
+      </el-table-column>
+      <el-table-column prop="power" align="center" label="电量">
+      </el-table-column>
+      <el-table-column prop="fwdqsj" align="center" width="150" label="服务器到期时间">
+      </el-table-column>
+      <el-table-column prop="cjh" align="center" width="190" label="车架号">
+      </el-table-column>
+      <el-table-column prop="czxm" align="center" label="车主姓名">
+      </el-table-column>
+      <el-table-column prop="czxb" align="center" label="车主性别">
+      </el-table-column>
+      <el-table-column prop="sfzhm" align="center" width="200" label="身份证号">
+      </el-table-column>
+      <el-table-column prop="sjhm" align="center" width="200" label="手机号码">
+      </el-table-column>
+      <el-table-column prop="cjsj" align="center" width="150" label="接入时间">
+      </el-table-column>
+      <el-table-column prop="cllx" align="center" width="150" label="车辆类型">
+      </el-table-column>
+      <el-table-column prop="clxh" align="center" width="250" label="车辆型号">
+      </el-table-column>
+      <el-table-column prop="csys" align="center" label="车身颜色">
+        <template slot-scope="scope">
+          <template v-if="scope.row.csys">
+            <i class="iconfont icon-car" :style="{color:scope.row.csys,fontSize:'30px',verticalAlign:'middle'}"></i>
+          </template>
+        </template>
+      </el-table-column>
+      <el-table-column prop="totalDistance" align="center" width="120" label="当日里程(公里)">
+      </el-table-column>
+      <el-table-column prop="allDistance" align="center" width="120" label="总里程(公里)">
+      </el-table-column> -->
+      <!-- <el-table-column prop="kxd" align="center" width="150" label="可信度(%)">
+      </el-table-column> -->
+      <el-table-column prop="address" align="left" width="540" label="设备详细地址">
+      </el-table-column>
+    </el-table>
+    <!--监控列表  end-->
+    <!--监控详情-->
+    <monitorListDetails v-if="monitorlsitDetailsState"></monitorListDetails>
+    <!--end-->
+  </div>
+</template>
+
+<script>
+import utils from "@/utils/tool.js"; //车辆信息
+import monitorListDetails from "@/components/table/carDetails/monitorListDetails.vue";
+import { monitorlsitDetailsAxios, currentServerTime } from "@/Api/mapApi.js";
+export default {
+  name: "monitorList",
+  components: {
+    monitorListDetails
+  },
+  computed: {
+    monitorData() {
+      return this.$store.getters.monitorData;
+    },
+    monitorListState() {
+      return this.$store.getters.monitorListState;
+    },
+    monitorlsitDetailsState() {
+      return this.$store.getters.monitorlsitDetailsState;
+    }
+  },
+  data() {
+    return {
+      serverTime: "", //服务器时间
+      carState: "", //车辆状态
+      detailsAdress: "" //详细地址
+    };
+  },
+  methods: {
+    //双击找到对应车辆在地图的位置
+    rowDblclickFitView(row, evt) {
+      this.$store.dispatch("zoomToCarByCarId", {
+        carId: row.vehicleid,
+        _this: this
+      });
+    //双击时打开列表详情   
+      let vehicleid =this.monitorData[0].vehicleid;
+      var _this=this;
+      this.$store.commit("listOrDeails", { states: true, index: 0 }); //跳转到详情
+      this.$indexedDB.getDataById("vehicleDetail",parseInt(vehicleid),function(result) {
+           let res = result.data;
+           if (res) {
+             _this.$store.commit("monitorDataDetails", {
+              map: _this.$map,
+              result: res
+            });
+       }
+     });
+  
+    },
+    //右键跳转到对应数据图表分析
+    rowContextmenu(row, evt) {
+      this.$router.push({
+        path: "/behavier",
+        query: {
+          rows: row
+        }
+      });
+    },
+    //取消监控车辆
+    deleteRow(index, row) {
+      this.$tree.setChecked("v" + row.vehicleid, false);
+      this.$store.commit("delete_monitorData", index);
+      this.$store.dispatch("delete_carMaker", {
+        carId: row.vehicleid,
+        _this: this,
+        index: index
+      });
+    },
+    //设置表格 车辆数据行 右键菜单
+    setTableVehRightContext() {
+      let _this = this;
+      this.$context.attach(
+        "div.monitorList table.el-table__body tr.el-table__row",
+        [
+          { header: "车辆功能菜单" },
+          {
+            text: "车辆详情",
+            action: function(e, doms) {
+              // let sort=0;
+              // let $tr=doms.parent().parent();
+              // let firstClassText=$tr.find('td').eq(1).text();                    //获取当前行的第二列数据
+              // $(".monitorList .el-table__fixed .el-table__row").each(function(index,item){
+              //   if($(this).find('td').eq(1).text()===firstClassText)
+              //      sort = index                                                 //跘断当前点击的是第几行
+              // });
+              let vehicleid =
+                _this.monitorData[doms.parents("tr.el-table__row").index()]
+                  .vehicleid;
+              _this.$store.commit("listOrDeails", { states: true, index: 0 }); //跳转到详情
+              _this.$indexedDB.getDataById(
+                "vehicleDetail",
+                parseInt(vehicleid),
+                function(result) {
+                  let res = result.data;
+                  if (res) {
+                    _this.$store.commit("monitorDataDetails", {
+                      map: _this.$map,
+                      result: res
+                    });
+                  }
+                }
+              );
+
+              // _this.carState = $tr.find("td").eq(4).text();                           //获取车辆状态
+              // _this.serverTime = $tr.find("td").eq(6).text()||'';                     //获取服务器时间
+              // _this.detailsAdress = $tr.find("td:last").text()||'';                   //获取详情地址
+
+              // monitorlsitDetailsAxios(parms)
+              //   .then(function (response) {
+              //   if(response.data.result.code==0){
+              //     console.log(response)
+              //       _this.$store.commit('monitorDataDetails',response.data.data);
+              //   }
+              //   }).catch(function (error) {
+              // });
+            }
+          },
+          {
+            text: "数据图表",
+            action2: function(e, doms) {
+              // let sort=0;
+              // let $tr=doms.parent().parent();
+              // let firstClassText=$tr.find('td').eq(1).text();                       //获取当前行的第二列数据
+              // $(".monitorList .el-table__fixed .el-table__row").each(function(index,item){
+              //   if($(this).find('td').eq(1).text() === firstClassText)
+              //     sort = index                                                      //跘断当前点击的是第几行
+              // });
+              let obj = {};
+              let veh =
+                _this.monitorData[doms.parents("tr.el-table__row").index()];
+              obj = veh;//将当前车辆详细信息存入
+              obj.vehicleid = "echart" + veh.vehicleid; //获取当前车辆标识ID
+              obj.name = veh.carNo;
+              obj.isHidden = true;
+              obj.windowType = "chart";
+              _this.$store.commit("update_hisZoom", obj); //打开数据图表窗口，提交修改状态数据
+            }
+          }
+        ]
+      );
+    },
+    mousedownFn(e) {
+      console.log(e.width);
+    },
+    formatted(row, column, cellValue, index) {
+      cosole.log(index);
+    }
+  },
+  mounted() {
+    this.setTableVehRightContext(); //设置右键菜单
+    console.log("111111111111111111111",this.monitorData);
+    console.log("000000000000000000000");
+  }
+};
+</script>

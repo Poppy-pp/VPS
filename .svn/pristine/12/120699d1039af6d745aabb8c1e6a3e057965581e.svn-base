@@ -1,0 +1,91 @@
+<template>
+  <section id="monitorListDetails">
+    <!--监控列表详情-->
+    <div class="monitorInfo setion1">
+      <!--图表展示-->
+      <p class="monitorHead">
+        <span class="carBrandSpan">
+           <span class="carBrand" v-text="monitorDataDetailsPute.basicdata.carno"></span>
+        </span>
+        <span class="carOwnerName" v-text="monitorDataDetailsPute.basicdata.ownername"></span>
+        <!--信息图标-->
+        <i :class="alliconfont.gender" style="color: #009bfb"></i>
+        <i :class="alliconfont.collections" style="color: #fcd300"></i>
+        <i :class="alliconfont.insurance" style="color: #fd6c18"></i>
+        <i :class="alliconfont.blacklist" style="color: red"></i>
+        <i :class="alliconfont.wallet" style="color: #f7645c"></i>
+        <i :class="alliconfont.card" style="color: #ff6a1b"></i>
+        <!--end-->
+      </p>
+      <div class="monitorContent">
+        <!--车主信息-->
+        <div class="equipment">
+          <img :src="imgSrc" class="images">
+          <div class="infoBox">
+            <p>车架: <span v-text="monitorDataDetailsPute.basicdata.vin"></span></p>
+            <p>车主身份证号: <span v-text=""></span></p>
+            <p>公司分组: <span v-text="monitorDataDetailsPute.basicdata.corpname"></span></p>
+            <p>备注: <span v-text=""></span></p>
+          </div>
+          <div class="infoBox">
+            <p>车辆状态: <span v-if="(monitorDataDetailsPute.realdata.istate != 1 && monitorDataDetailsPute.realdata.istate > 0) || monitorDataDetailsPute.realdata.istate == 0">在线</span><span v-else>离线</span></p>
+            <p>服务开始时间: <span v-text="monitorDataDetailsPute.realdata.recvtime"></span></p>
+            <p>插入平台时间: <span v-text="utils.formatDate.formatTime(monitorDataDetailsPute.basicdata.appointdate)"></span></p>
+            <p v-if="monitorDataDetailsPute.realdata.address">地址: <span v-text="monitorDataDetailsPute.realdata.address"></span></p>
+          </div>
+        </div>
+        <!--设备信息-->
+        <div class="equipment" v-for="(item,index) in monitorDataDetailsPute.proddata" :key="index">
+          <img :src="imgSrc2" class="images">
+          <div class="infoBox">
+            <p>设备状态:
+              <span v-if='monitorDataDetailsPute.realdata.istate == 1' v-text="'离线'+utils.formatDate.countTime( utils.formatDate.formatTime(new Date().getTime()) ,monitorDataDetailsPute.realdata.gpstime)"></span>
+              <span v-else-if='monitorDataDetailsPute.realdata.istate == 1 || monitorDataDetailsPute.realdata.veo == 0' v-text="'停车'+utils.formatDate.countTime( utils.formatDate.formatTime(new Date().getTime()) ,monitorDataDetailsPute.realdata.gpstime)"></span>
+              <span v-else v-text="'行驶'+utils.formatDate.countTime( utils.formatDate.formatTime(new Date().getTime()) ,monitorDataDetailsPute.realdata.gpstime)"></span>
+            </p>
+            <!-- <p>有效定位: <span v-text=""></span></p> -->
+            <p>定位方式: <span v-text="'GPS'"></span></p>
+            <p>服务器时间: <span v-text="monitorDataDetailsPute.realdata.recvtime"></span></p>
+          </div>
+          <div class="infoBox">
+            <p>设备安装时间: <span v-text="item.installtime || ''"></span></p>
+            <p>GPS时间: <span v-text="monitorDataDetailsPute.realdata.gpstime"></span></p>
+            <!-- <p v-if="detailsAdress">地址: <span v-text="detailsAdress"></span></p> -->
+          </div>
+          <div class="infoBox">
+            <p>SIM: <span v-text="item.simcard"></span></p>
+            <p>设备编号: <span v-text="item.prodnum"></span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script>
+  import utils from '@/utils/tool';                                //引入工具
+  export default {
+    name: "detail",
+    computed:{
+      monitorDataDetailsPute () {
+        return this.$store.getters.monitorDataDetails;
+      }
+    },
+    data() {
+      return {
+        utils:utils,
+        //监控列表详情
+        imgSrc: '/static/images/carDetails/carsImg.png', //汽车图片假数据
+        imgSrc2: '/static/images/carDetails/shebei.png', //设备图片假数据
+        alliconfont: {
+            gender: 'iconfont icon-nan', //性别icon
+            collections: 'iconfont icon-guanzhu2', //收藏icon
+            insurance: 'iconfont icon-baozhang-copy', //保险icon
+            blacklist: 'iconfont icon-4fayuanheimingdan272636', //黑名单icon
+            wallet: 'iconfont icon-qiandai', //钱包icon
+            card: 'iconfont icon-yinxingqia3' //卡icon
+        }
+      }
+    }
+  }
+</script>

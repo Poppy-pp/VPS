@@ -1,0 +1,159 @@
+<!-- 数据图表-车辆报警 -->
+<template>
+    <section id="carPoliceBox" >
+      <!-- 四边小角 -->
+      <div class="left-top"></div>
+      <div class="right-top"></div>
+      <div class="let-bottom"></div>
+      <div class="right-bottom"></div>
+      <div class="detail">
+        <div class="header">
+          <span>车辆报警</span>
+          <span style="font-size: 20px; margin-left:5px">{{listData.total}}次</span>
+        </div>
+        <ul class="infoTit">
+          <li v-for="item in listData.value">{{ item.name }} <span>次</span><span style="margin-right: 4px" v-text="item.num"></span></li>
+        </ul>
+      </div>
+      <div id="alarmChart"></div>
+
+    </section>
+</template>
+<script>
+import { alarmVeh } from '@/Api/mapApi.js'
+export default {
+  name: '',
+  data () {
+    return {
+      listData: [] // 数据组
+    }
+  },
+  props: ['cls'],
+  mounted () {
+    let _this = this;
+    _this.getDataDetail((data) => { // 获取数据
+      _this.drawLine(1, data);
+    })
+  },
+  computed: {
+    timeState () {
+      return this.$store.getters.timeState;
+    }
+  },
+  methods: {
+    // 获取数据
+    getDataDetail (callback) {
+      var reg = /[a-zA-Z]/g; var carid = ''; // 去掉车辆id中的字母
+      carid = this.$store.state.hisZoom.info[0].vehicleid.replace(reg, '');
+      let para = {
+        carId: carid,
+        type: this.$store.getters.timeState
+      }
+      alarmVeh(para).then((res) => {
+        if (res.data.status == 'SUCCEED') {
+          this.listData = res.data.data;
+          this.$store.commit('SET_COUNT', {alarmAll: this.listData.total});// 更新vuex，提供给总数统计
+        }
+        if (callback) callback(this.listData)
+      })
+    },
+
+
+    drawLine (timeState, listData) {
+      let chartData = ''; let _this = this;
+      switch (+timeState) {
+        // 年
+        case 1: {
+          chartData = (function () {
+            var res = [];
+            listData.value.forEach((item, index) => {
+              res.push({
+                name: item.name,
+                value: item.num
+              });
+            });
+            return res;
+          })();
+          _this.chartInit(chartData);
+          break;
+        }
+        // 月
+        case 2: {
+          chartData = (function () {
+            var res = [];
+            listData.value.forEach((item, index) => {
+              res.push({
+                name: item.name,
+                value: item.num
+              });
+            });
+            return res;
+          })();
+          _this.chartInit(chartData);
+          break;
+        }
+        // 日
+        case 3: {
+          chartData = (function () {
+            var res = [];
+            listData.value.forEach((item, index) => {
+              res.push({
+                name: item.name,
+                value: item.num
+              });
+            });
+            return res;
+          })();
+          _this.chartInit(chartData);
+          break;
+        }
+      }
+    },
+    chartInit (chartData) {
+      let _this = this;
+      // 基于准备好的dom，初始化echarts实例
+      let chartDiv = document.querySelector('#alarmChart');
+      // 自适应宽高
+      let myChartContainer = function () {
+        chartDiv.style.width = $('#carPoliceBox').width() - $('#carPoliceBox').width() * 0.3 + 'px';
+        chartDiv.style.height = $('#carPoliceBox').height() + 'px';
+      };
+      myChartContainer();
+      let alarmChart = _this.$echarts.init(document.getElementById('alarmChart'));
+      let chartType = 'alarm';
+      alarmChart.setOption({
+        tooltip: {
+          trigger: 'item',
+          formatter: '{a} <br/>{b} : {c}次 ({d}%)'
+        },
+        toolbox: {
+          show: false
+        },
+        calculable: true,
+        series: [
+          {
+            name: '车辆报警',
+            type: 'pie',
+            radius: '55%',
+            center: ['50%', '60%'],
+            data: chartData
+          }
+        ]
+      });
+      // 浏览器大小改变时重置大小
+      window.addEventListener('resize', function () {
+        myChartContainer();
+        alarmChart.resize();
+      });
+    }
+  },
+  watch: {
+    timeState: function (newVal, oldVal) {
+      this.getDataDetail((data) => { // 获取数据
+        this.drawLine(newVal, data);
+      });
+    }
+  }
+}
+</script>
+
